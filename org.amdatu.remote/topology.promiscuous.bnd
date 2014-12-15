@@ -1,0 +1,11 @@
+Bundle-Activator: org.amdatu.remote.topology.promiscuous.Activator
+Bundle-Name: Amdatu Remote - Topology Manager (Promiscuous)
+Bundle-Version: 0.1.2
+
+Private-Package: \
+  org.amdatu.remote,\
+  org.amdatu.remote.topology.promiscuous,\
+  org.apache.commons.lang3.*
+
+Provide-Capability: osgi.remoteserviceadmin.topology; \
+  policy:List<String>="promiscuous"; version:Version="1.1"

@@ -1,0 +1,32 @@
+Bundle-Activator: org.amdatu.remote.discovery.etcd.Activator
+Bundle-Name: Amdatu Remote - Discovery (Etcd)
+Bundle-Version: 0.1.1
+
+Private-Package:  \
+	org.amdatu.remote,\
+	com.ning.compress.*,\
+	org.amdatu.remote.discovery,\
+	org.amdatu.remote.discovery.etcd,\
+	mousio.etcd4j.*,\
+    mousio.client.*,\
+    io.netty.*,\
+    org.slf4j.*,\
+    com.fasterxml.jackson.core.*,\
+    org.apache.commons.lang3.*
+
+Import-Package:  \
+    !com.google.protobuf,\
+    !com.jcraft.jzlib,\
+    !javassist,\
+    !net.jpountz.*,\
+    !org.apache.commons.logging,\
+    !org.apache.log4j,\
+    !org.apache.tomcat.jni,\
+    !org.bouncycastle.*,\
+    !org.eclipse.jetty.npn,\
+    !org.jboss.marshalling,\
+    !sun.security.*,\
+    *
+    	
+Provide-Capability: osgi.remoteserviceadmin.discovery; \
+  protocols:List<String>="etcd"; version:Version="1.1"
