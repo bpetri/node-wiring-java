@@ -1,0 +1,260 @@
+/*
+ * Copyright (c) 2010-2013 The Amdatu Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.inaetics.wiring.admin.http;
+
+import static org.inaetics.wiring.ServiceUtil.getConfigIntValue;
+import static org.inaetics.wiring.ServiceUtil.getConfigStringValue;
+import static org.inaetics.wiring.admin.http.HttpAdminConstants.CONNECT_TIMEOUT_CONFIG_KEY;
+import static org.inaetics.wiring.admin.http.HttpAdminConstants.PATH_CONFIG_KEY;
+import static org.inaetics.wiring.admin.http.HttpAdminConstants.READ_TIMEOUT_CONFIG_KEY;
+import static org.inaetics.wiring.admin.http.HttpAdminConstants.SERVICE_PID;
+import static org.inaetics.wiring.admin.http.HttpAdminConstants.SUPPORTED_CONFIGURATION_TYPES;
+import static org.inaetics.wiring.admin.http.HttpAdminConstants.ZONE_CONFIG_KEY;
+import static org.inaetics.wiring.admin.http.HttpAdminConstants.NODE_CONFIG_KEY;
+import static org.osgi.service.remoteserviceadmin.RemoteConstants.REMOTE_CONFIGS_SUPPORTED;
+
+import java.net.URL;
+import java.util.Dictionary;
+import java.util.Hashtable;
+
+import javax.swing.text.ZoneView;
+
+import org.apache.felix.dm.Component;
+import org.apache.felix.dm.DependencyActivatorBase;
+import org.apache.felix.dm.DependencyManager;
+import org.inaetics.wiring.NodeEndpointEventListener;
+import org.inaetics.wiring.admin.WiringAdminListener;
+import org.inaetics.wiring.admin.WiringAdmin;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
+import org.osgi.service.cm.ConfigurationException;
+import org.osgi.service.cm.ManagedService;
+import org.osgi.service.http.HttpService;
+import org.osgi.service.log.LogService;
+
+/**
+ * Activator and configuration manager for the Amdatu HTTP Remote Service Admin service implementation.
+ * <p>
+ * Configuration can be provided through cm as well as system properties. The former take precedence and
+ * in addition some fallbacks and defaults are provided. See {@link HttpAdminConstants} for supported
+ * configuration properties.
+ * <p>
+ * Note that any effective configuration change will close all existing import- and export registrations.
+ *
+ * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
+ */
+public final class Activator extends DependencyActivatorBase implements ManagedService, HttpAdminConfiguration {
+   
+	private static final int DEFAULT_CONNECT_TIMEOUT = 5000;
+    private static final int DEFAULT_READ_TIMEOUT = 60000;
+
+    private volatile BundleContext m_context;
+    private volatile DependencyManager m_dependencyManager;
+
+    private volatile Component m_configurationComponent;
+    private volatile Component m_factoryComponent;
+    
+    private volatile URL m_baseUrl;
+    private volatile int m_connectTimeout;
+    private volatile int m_readTimeout;
+    private volatile String m_zone;
+    private volatile String m_node;
+    
+    @Override
+    public void init(BundleContext context, DependencyManager manager) throws Exception {
+        
+    	m_context = context;
+    	m_dependencyManager = manager;
+
+        int connectTimeout = getConfigIntValue(context, CONNECT_TIMEOUT_CONFIG_KEY, null, DEFAULT_CONNECT_TIMEOUT);
+        int readTimeout = getConfigIntValue(context, READ_TIMEOUT_CONFIG_KEY, null, DEFAULT_READ_TIMEOUT);
+        String zone = getConfiguredZone(null);
+        String node = getConfiguredNode(null);
+        
+        try {
+            m_baseUrl = parseConfiguredBaseUrl(null);
+            m_connectTimeout = connectTimeout;
+            m_readTimeout = readTimeout;
+            m_zone = zone;
+            m_node = node;
+            registerFactoryService();
+            registerConfigurationService();
+        }
+        catch (Exception e) {
+            throw new ConfigurationException("base url", "invalid url", e);
+        }
+    }
+
+    @Override
+    public void destroy(BundleContext context, DependencyManager manager) throws Exception {
+
+        unregisterConfigurationService();
+        unregisterFactoryService();
+    }
+
+    @Override
+    public void updated(Dictionary<String, ?> properties) throws ConfigurationException {
+        
+        // first parse timeout to local variables, in order to make this method "transactional"
+        // assign values to fields after baseUrl was successfully
+        int connectTimeout = getConfigIntValue(m_context, CONNECT_TIMEOUT_CONFIG_KEY, properties, DEFAULT_CONNECT_TIMEOUT);
+        int readTimeout = getConfigIntValue(m_context, READ_TIMEOUT_CONFIG_KEY, properties, DEFAULT_READ_TIMEOUT);
+        String zone = getConfiguredZone(properties);
+        String node = getConfiguredNode(properties);
+        
+        URL baseUrl = parseConfiguredBaseUrl(properties);
+
+        try {
+            m_connectTimeout = connectTimeout;
+            m_readTimeout = readTimeout;
+            m_zone = zone;
+            m_node = node;
+            
+            if (!baseUrl.equals(m_baseUrl)) {
+                m_baseUrl = baseUrl;
+
+                unregisterFactoryService();
+                Thread.sleep(100);
+                registerFactoryService();
+            }
+        }
+        catch (Exception e) {
+            throw new ConfigurationException("base url", "invalid url", e);
+        }
+    }
+
+    private void registerConfigurationService() {
+        Dictionary<String, Object> properties = new Hashtable<String, Object>();
+        properties.put(Constants.SERVICE_PID, HttpAdminConstants.SERVICE_PID);
+
+        Component component = createComponent()
+            .setInterface(ManagedService.class.getName(), properties)
+            .setImplementation(this)
+            .setAutoConfig(DependencyManager.class, false)
+            .setAutoConfig(Component.class, false);
+
+        m_configurationComponent = component;
+        m_dependencyManager.add(component);
+    }
+
+    private void unregisterConfigurationService() {
+        Component component = m_configurationComponent;
+        m_configurationComponent = null;
+        if (component != null) {
+            m_dependencyManager.remove(component);
+        }
+    }
+
+    private void registerFactoryService() {
+
+        String[] objectClass =
+                new String[] { WiringAdmin.class.getName(), NodeEndpointEventListener.class.getName() };
+    	
+    	Dictionary<String, Object> properties = new Hashtable<String, Object>();
+
+        WiringAdminFactory factory = new WiringAdminFactory(this);
+
+        Component component = createComponent()
+            .setInterface(objectClass, properties)
+            .setImplementation(factory)
+            .add(createServiceDependency()
+                .setService(HttpService.class)
+                .setRequired(true))
+            .add(createServiceDependency()
+                .setService(LogService.class)
+                .setRequired(false))
+            .add(createServiceDependency()
+                .setService(NodeEndpointEventListener.class)
+                .setCallbacks(factory.getEventEmitter(), "nodeEndpointEventlistenerAdded", "nodeEndpointEventlistenerRemoved")
+                .setRequired(false))
+        	.add(createServiceDependency()
+                .setService(WiringAdminListener.class)
+                .setCallbacks(factory.getWiringAdminListenerHandler(), "wiringAdminListenerAdded", "wiringAdminListenerRemoved")
+                .setRequired(false));
+
+        m_factoryComponent = component;
+        m_dependencyManager.add(component);
+    }
+
+    private void unregisterFactoryService() {
+        Component component = m_factoryComponent;
+        m_factoryComponent = null;
+        if (component != null) {
+            m_dependencyManager.remove(component);
+        }
+    }
+
+    private URL parseConfiguredBaseUrl(Dictionary<String, ?> properties) throws ConfigurationException {
+        String host = getConfigStringValue(m_context, HttpAdminConstants.HOST_CONFIG_KEY, properties, null);
+        if (host == null) {
+            host = getConfigStringValue(m_context, "org.apache.felix.http.host", properties, "localhost");
+        }
+
+        int port = getConfigIntValue(m_context, HttpAdminConstants.PORT_CONFIG_KEY, properties, -1);
+        if (port == -1) {
+            port = getConfigIntValue(m_context, "org.osgi.service.http.port", properties, 8080);
+        }
+
+        String path = getConfigStringValue(m_context, PATH_CONFIG_KEY, properties, SERVICE_PID);
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+        if (!path.endsWith("/")) {
+            path = path + "/";
+        }
+
+        try {
+            return new URL("http", host, port, path);
+        }
+        catch (Exception e) {
+            throw new ConfigurationException("unknown", e.getMessage(), e);
+        }
+    }
+
+    private String getConfiguredZone(Dictionary<String, ?> properties) throws ConfigurationException {
+        return getConfigStringValue(m_context, ZONE_CONFIG_KEY, properties, "");
+    }
+
+    private String getConfiguredNode(Dictionary<String, ?> properties) throws ConfigurationException {
+        return getConfigStringValue(m_context, NODE_CONFIG_KEY, properties, "");
+    }
+
+    @Override
+    public URL getBaseUrl() {
+        return m_baseUrl;
+    }
+    
+    @Override
+    public int getConnectTimeout() {
+        return m_connectTimeout;
+    }
+
+    @Override
+    public int getReadTimeout() {
+        return m_readTimeout;
+    }
+
+	@Override
+	public String getZone() {
+		return m_zone;
+	}
+
+    @Override
+    public String getNode() {
+        return m_node;
+    }
+}
+

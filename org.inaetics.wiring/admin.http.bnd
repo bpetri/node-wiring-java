@@ -1,0 +1,16 @@
+Bundle-Activator: org.inaetics.wiring.admin.http.Activator
+Bundle-Name: Inaetics Wiring - Wiring Admin (HTTP)
+Bundle-Version: 0.1.0
+
+Private-Package:  \
+	org.inaetics.wiring,\
+	org.inaetics.wiring.admin,\
+	org.inaetics.wiring.admin.http,\
+	org.apache.commons.lang3.*,\
+	org.codehaus.*
+
+Import-Package:  \
+	!org.joda.time.*,\
+	*
+
+DynamicImport-Package: *

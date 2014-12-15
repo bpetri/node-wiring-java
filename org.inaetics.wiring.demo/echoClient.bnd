@@ -1,0 +1,3 @@
+Private-Package:  \
+	org.inaetics.wiring.demo.echoClient
+Bundle-Activator: org.inaetics.wiring.demo.echoService.Activator
