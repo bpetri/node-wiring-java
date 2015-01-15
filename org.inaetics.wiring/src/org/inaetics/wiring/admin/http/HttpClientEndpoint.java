@@ -31,8 +31,8 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.JavaType;
-import org.inaetics.wiring.NodeEndpointDescription;
 import org.inaetics.wiring.admin.Message;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
 import org.osgi.framework.ServiceException;
 
 /**

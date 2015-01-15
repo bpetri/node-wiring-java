@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -30,13 +32,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import mousio.client.promises.ResponsePromise;
 import mousio.client.promises.ResponsePromise.IsSimplePromiseResponseHandler;
 import mousio.etcd4j.EtcdClient;
+import mousio.etcd4j.requests.EtcdKeyPutRequest;
 import mousio.etcd4j.responses.EtcdException;
 import mousio.etcd4j.responses.EtcdKeyAction;
 import mousio.etcd4j.responses.EtcdKeysResponse;
 import mousio.etcd4j.responses.EtcdKeysResponse.EtcdNode;
 
-import org.inaetics.wiring.NodeEndpointDescription;
 import org.inaetics.wiring.discovery.AbstractDiscovery;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
 
 /**
  * Etcd implementation of service node based discovery. This type of discovery discovers HTTP nodes
@@ -46,8 +49,12 @@ import org.inaetics.wiring.discovery.AbstractDiscovery;
  */
 public final class EtcdNodeDiscovery extends AbstractDiscovery {
 
-    public static final String DISCOVERY_NAME = "Amdatu Remote Service Node (Etcd)";
+	public static final String DISCOVERY_NAME = "Amdatu Remote Service Node (Etcd)";
     public static final String DISCOVERY_TYPE = "etcd";
+
+    private static final String ENDPOINT_KEY_URL = "url";
+    private static final String ENDPOINT_KEY_METADATA = "metadata";
+    private static final String SEP = "/";
 
     private final EtcdDiscoveryConfiguration m_configuration;
 
@@ -115,53 +122,20 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
         	
         	// create dirs if not available yet...
         	String rootPath = m_configuration.getRootPath();
-        	m_etcd.putDir(rootPath).send().get();
         	
-            EtcdKeysResponse response = m_etcd.getDir(rootPath).send().get();
+        	try {
+				m_etcd.putDir(rootPath).send().get();
+			} catch (Exception e) {
+				// nothing to do, directory exists already
+			}
+        	
+            EtcdKeysResponse response = m_etcd.getDir(rootPath).recursive().send().get();
             index = getEtcdIndex(response);
             logDebug("Initializing peer nodes at etcd index %s", index);
             if (response.node.dir && response.node.nodes != null) {
-                // zones
-            	for (EtcdNode zoneNode : response.node.nodes) {
-            		if(zoneNode.dir) {
-            			String zone = zoneNode.key;
-            			
-            			// nodes
-                    	for (EtcdNode nodeNode : zoneNode.nodes) {
-                    		if(nodeNode.dir) {
-                    			String node = nodeNode.key;
-
-                    			// path
-                            	for (EtcdNode pathNode : nodeNode.nodes) {
-                            		if(pathNode.dir) {
-	                        			String path = pathNode.key;
-	
-	                        			// endpoint
-	                                	for (EtcdNode endpointNode : nodeNode.nodes) {
-	                                		if(endpointNode.dir) {
-	    	                        			String endpoint = endpointNode.key;
-	    	
-	    	                        			try {
-	    	                                        logDebug("Adding %s %s %s %s", zone, node, path, endpoint);
-	    	                                        
-	    	                                        NodeEndpointDescription nodeEndpointDescription = new NodeEndpointDescription();
-	    	                                        nodeEndpointDescription.setZone(zone);
-	    	                                        nodeEndpointDescription.setNode(node);
-	    	                                        nodeEndpointDescription.setPath(path);
-	    	                                        nodeEndpointDescription.setEndpoint(parseEndpoint(endpoint));
-	    	                                        
-	    	                                        addDiscoveredNode(nodeEndpointDescription);
-	    	                                    }
-	    	                                    catch (Exception e) {
-	    	                                        logWarning("Failed to add discovery node", e);
-	    	                                    }
-	                                		}
-	                                	}
-                            		}
-                            	}
-                    		}
-                    	}
-            		}
+                List<NodeEndpointDescription> endpoints = getNodeEndpointDescriptions(response);
+                for (NodeEndpointDescription endpoint : endpoints) {
+    				addDiscoveredNode(endpoint);
                 }
             }
         }
@@ -172,70 +146,99 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
             setDirectoryWatch(index + 1);
         }
     }
-    
-    private void handleDiscoveryNodeChange(EtcdKeysResponse response) throws Exception {
-        long index = 0l;
-        try {
-            index = response.node.modifiedIndex;
-            logDebug("Handling peer node change at etcd index %s", index);
-            
-            
-            if (response.node.dir && response.node.nodes != null) {
-                // zones
-            	for (EtcdNode zoneNode : response.node.nodes) {
-            		if(zoneNode.dir) {
-            			String zone = zoneNode.key;
-            			
-            			// nodes
-                    	for (EtcdNode nodeNode : zoneNode.nodes) {
-                    		if(nodeNode.dir) {
-                    			String node = nodeNode.key;
 
-                    			// path
-                            	for (EtcdNode pathNode : nodeNode.nodes) {
-                            		if(pathNode.dir) {
-	                        			String path = pathNode.key;
-	                    			
-			                			// endpoints
-			                        	for (EtcdNode endpointNode : pathNode.nodes) {
-			                    			String endpoint = endpointNode.key;
-			
-			                                NodeEndpointDescription nodeEndpointDescription = new NodeEndpointDescription();
-			                                nodeEndpointDescription.setZone(zone);
-			                                nodeEndpointDescription.setNode(node);
-			                                nodeEndpointDescription.setPath(path);
-			                                nodeEndpointDescription.setEndpoint(parseEndpoint(endpoint));
-			                                    
-			                                // TODO check what exactly we get in the watch response!
-			                                // dir? single node?
-			                                
-			                                // we get "set" on a watch response
-			                                if (response.action == EtcdKeyAction.set) {
-			
-			                                    // when its changed, first remove old node
-			                                    if (response.prevNode != null && !response.prevNode.value.equals(response.node.value)) {
-			                                        removeDiscoveredNode(nodeEndpointDescription);
-			                                    }
-			
-			                                    // when it's new or changed, add node
-			                                    if (response.prevNode == null || !response.prevNode.value.equals(response.node.value)) {
-			                                        addDiscoveredNode(nodeEndpointDescription);
-			                                    }
-			
-			                                }
-			                                
-			                                // remove node on "delete" or "expire"
-			                                else if ((response.action == EtcdKeyAction.delete || response.action == EtcdKeyAction.expire)) {
-			                                    removeDiscoveredNode(nodeEndpointDescription);
-			                                }
-			                        	}
+    private List<NodeEndpointDescription> getNodeEndpointDescriptions(EtcdKeysResponse response) {
+    	
+    	List<NodeEndpointDescription> endpoints = new ArrayList<>();
+    	
+        // zones
+    	for (EtcdNode zoneNode : response.node.nodes) {
+    		if(zoneNode.dir && zoneNode.nodes != null) {
+    			String zone = zoneNode.key;
+    			
+    			// nodes
+            	for (EtcdNode nodeNode : zoneNode.nodes) {
+            		if(nodeNode.dir && nodeNode.nodes != null) {
+            			String node = nodeNode.key;
+
+            			// path
+                    	for (EtcdNode pathNode : nodeNode.nodes) {
+                    		if(pathNode.dir && pathNode.nodes != null) {
+                    			String path = pathNode.key;
+
+                    			// endpoint scheme
+                            	for (EtcdNode schemeNode : pathNode.nodes) {
+                            		if(schemeNode.dir && schemeNode.nodes != null) {
+	
+	                        			// endpoint scheme
+	                                	for (EtcdNode endpointNode : schemeNode.nodes) {
+	                                		
+	                                		String key = endpointNode.key;
+	                                		if(key.endsWith(SEP + ENDPOINT_KEY_URL)) {
+	                                			String endpoint = endpointNode.value;
+	                                			try {
+	                                				logDebug("Adding %s %s %s %s", zone, node, path, endpoint);
+	                                				
+	                                				NodeEndpointDescription nodeEndpointDescription = new NodeEndpointDescription();
+	                                				nodeEndpointDescription.setZone(zone);
+	                                				nodeEndpointDescription.setNode(node);
+	                                				nodeEndpointDescription.setPath(path);
+	                                				nodeEndpointDescription.setEndpoint(parseEndpoint(endpoint));
+	                                				
+	                                				endpoints.add(nodeEndpointDescription);
+	                                				
+	                                			}
+	                                			catch (Exception e) {
+	                                				logWarning("Failed to add discovery node", e);
+	                                			}
+	                                		}
+	                                	}
                             		}
                             	}
                     		}
                     	}
             		}
-                }
+            	}
+    		}
+    	}
+    	
+    	return endpoints;
+    }
+    
+    private void handleDiscoveryNodeChange(EtcdKeysResponse response) throws Exception {
+
+    	long index = 0l;
+        try {
+            index = response.node.modifiedIndex;
+            logInfo("Handling peer node change at etcd index %s, action %s, key %s", index, response.action.toString(), response.node.key);
+            
+            NodeEndpointDescription endpoint = getEndpointFromWatchResponse(response.node);
+            
+            // we get updates for parent dirs too, we ignore them
+            if (endpoint.getEndpoint() == null) {
+            	return;
             }
+            
+            // we get "set" (node) or "update" (dir) on a update
+            if (response.action == EtcdKeyAction.set) {
+
+                // when its changed, first remove old node
+                if (response.prevNode != null && !response.prevNode.value.equals(response.node.value)) {
+                    removeDiscoveredNode(endpoint);
+                }
+
+                // when it's new or changed, add node
+                if (response.prevNode == null || !response.prevNode.value.equals(response.node.value)) {
+                    addDiscoveredNode(endpoint);
+                }
+
+            }
+            
+            // remove node on "delete" or "expire"
+            else if ((response.action == EtcdKeyAction.delete || response.action == EtcdKeyAction.expire)) {
+                removeDiscoveredNode(endpoint);
+            }
+
         }
         catch (Exception e) {
             logError("Could not handle peer discovery node change!", e);
@@ -243,6 +246,60 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
         finally {
             setDirectoryWatch(index + 1);
         }
+    }
+    
+    private NodeEndpointDescription getEndpointFromWatchResponse(EtcdNode etcdNode) {
+    	String key = etcdNode.key;
+    	String all = key.substring(m_configuration.getRootPath().length());
+    	
+    	NodeEndpointDescription endpoint = new NodeEndpointDescription();
+    	
+    	// zone
+    	String zone = getNextPart(all); 
+    	if(zone == null) {
+    		return endpoint;
+    	}
+    	endpoint.setZone(zone);
+    	all = all.substring(zone.length() + 1);
+
+    	// node
+    	String node = getNextPart(all); 
+    	if(node == null) {
+    		return endpoint;
+    	}
+    	endpoint.setNode(node);
+    	all = all.substring(node.length() + 1);
+    	
+    	// path
+    	String path = getNextPart(all); 
+    	if(path == null) {
+    		return endpoint;
+    	}
+    	endpoint.setPath(path);
+    	all = all.substring(path.length() + 1);
+    	
+    	// protocol
+    	String protocol = getNextPart(all); 
+    	if(protocol == null) {
+    		return endpoint;
+    	}
+    	all = all.substring(protocol.length() + 1);
+
+    	// url
+    	String url = getNextPart(all); 
+    	if(url == null) {
+    		return endpoint;
+    	}
+    	try {
+			endpoint.setEndpoint(new URL(url));
+		} catch (MalformedURLException e) {
+		}
+
+    	return endpoint;
+    }
+    
+    private String getNextPart(String s) {
+    	return s.contains(SEP) ? s.substring(0, s.indexOf(SEP)) : null;
     }
 
     private long getEtcdIndex(EtcdKeysResponse response) {
@@ -307,24 +364,22 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     }
 
     private String getEndpointPath(NodeEndpointDescription endpoint) {
-    	return getPathPath(endpoint) + toEndpointString(endpoint.getEndpoint()) + "/";
+    	return getPathPath(endpoint) + endpoint.getEndpoint().getProtocol() + "/";
     }
     
+    private String getEndpointUrlPath(NodeEndpointDescription endpoint) {
+    	return getEndpointPath(endpoint) + ENDPOINT_KEY_URL;
+    }
+
     private URL parseEndpoint(String endpoint) {
-    	// all / are replaced with |
-    	String url = endpoint.replaceAll("|", "/");
     	try {
-			return new URL(url);
+			return new URL(endpoint);
 		} catch (MalformedURLException e) {
-			logWarning("malformed url, can not parse endpoint: %s",	url);
+			logWarning("malformed url, can not parse endpoint: %s",	endpoint);
 			return null;
 		}
     }
     
-    private String toEndpointString(URL url) {
-    	return url.toString().replaceAll("/", "|");
-    }
-
     private class EtcdRegistrationUpdater implements Runnable {
 
         private static final int ETCD_REGISTRATION_TTL = 60;
@@ -340,8 +395,10 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 
         private void putPublishedEndpoints() throws Exception {
         	m_lock.readLock().lock();
-        	// node
-        	if(m_localNode.getZone() != null && m_localNode.getNode() != null) {
+        	// put only zone and node, if we know it and have no endpoints
+        	if(m_publishedNodeEndpoints.isEmpty()
+        			&& m_localNode.getZone() != null && m_localNode.getNode() != null
+        			&& m_localNode.getZone().length() > 0 && m_localNode.getNode().length() > 0) {
         		putNode(m_localNode);
         	}
         	// endpoints
@@ -353,25 +410,53 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 
         private void putNode(NodeEndpointDescription node) throws Exception {
         	// put zone
-        	m_etcd.putDir(getZonePath(node)).ttl(ETCD_REGISTRATION_TTL).send();
+        	putDir(getZonePath(node));
         	
         	// put node
-        	m_etcd.putDir(getNodePath(node)).ttl(ETCD_REGISTRATION_TTL).send();
+        	putDir(getNodePath(node));
         	
         	// put node metadata
         	m_etcd.put(getNodePath(node) + "metadata", "{test : test}").ttl(ETCD_REGISTRATION_TTL).send();
         }
         
-
+        
 		public void putPublishedEndpoint(NodeEndpointDescription endpoint) throws Exception {
-        	// put endpoint
-        	m_etcd.putDir(getEndpointPath(endpoint)).ttl(ETCD_REGISTRATION_TTL).send();
+			
+			// put zone and node
+			putNode(endpoint);
+			
+			// put path
+			putDir(getPathPath(endpoint));
+        	
+			// put endpoint protocol
+			putDir(getEndpointPath(endpoint));
+
+        	// put endpoint url
+        	m_etcd.put(getEndpointUrlPath(endpoint), endpoint.getEndpoint().toString()).ttl(ETCD_REGISTRATION_TTL).send();
         	
         	// put endpoint metadata
         	m_etcd.put(getEndpointPath(endpoint) + "metadata", "{test : test}").ttl(ETCD_REGISTRATION_TTL).send();
         }
         
-        @Override
+        private void putDir(String path) throws IOException {
+        	EtcdKeyPutRequest putRequest = m_etcd.putDir(path).ttl(ETCD_REGISTRATION_TTL);
+        	// purDir with ttl needs prevExis when already existing
+        	if(dirExists(path)) {
+        		putRequest.prevExist(true);
+        	}
+        	putRequest.send();
+        }
+
+        private boolean dirExists(String path) {
+        	try {
+				m_etcd.getDir(path);
+			} catch (Exception e) {
+				return false;
+			}
+        	return true;
+        }
+
+		@Override
         public void run() {
             try {
             	putPublishedEndpoints();
@@ -399,7 +484,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
         	m_lock.readLock().unlock();
         }
         
-        private void deleteEndpoint(NodeEndpointDescription endpoint) throws Exception {
+        public void deleteEndpoint(NodeEndpointDescription endpoint) throws Exception {
         	m_etcd.deleteDir(getEndpointPath(endpoint)).recursive().send();
         }
         
@@ -423,6 +508,11 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 	protected void addPublishedNode(NodeEndpointDescription endpoint) {
 		m_lock.writeLock().lock();
 		m_publishedNodeEndpoints.put(endpoint.getId(), endpoint);
+		try {
+			m_updater.putPublishedEndpoint(endpoint);
+		} catch (Exception e) {
+			logError("error publishing endpoint %s", e, endpoint);
+		}
 		m_lock.writeLock().unlock();
 	}
 
@@ -430,6 +520,11 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 	protected void removePublishedNode(NodeEndpointDescription endpoint) {
 		m_lock.writeLock().lock();
 		m_publishedNodeEndpoints.remove(endpoint.getId());
+		try {
+			m_updater.deleteEndpoint(endpoint);
+		} catch (Exception e) {
+			logError("error unpublishing endpoint %s", e, endpoint);
+		}
 		m_lock.writeLock().unlock();
 	}
 

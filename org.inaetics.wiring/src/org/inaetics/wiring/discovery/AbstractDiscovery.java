@@ -19,9 +19,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.inaetics.wiring.AbstractNodePublishingComponent;
-import org.inaetics.wiring.NodeEndpointDescription;
-import org.inaetics.wiring.NodeEndpointEvent;
-import org.inaetics.wiring.NodeEndpointEventListener;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointEvent;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointEventListener;
 
 /**
  * Base class for a Discovery Service that handles node registration as well as listener tracking

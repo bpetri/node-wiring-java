@@ -25,8 +25,7 @@ import java.util.Properties;
 import org.apache.felix.dm.Component;
 import org.apache.felix.dm.DependencyActivatorBase;
 import org.apache.felix.dm.DependencyManager;
-import org.inaetics.wiring.NodeEndpointEventListener;
-import org.inaetics.wiring.ServiceUtil;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointEventListener;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.service.cm.ConfigurationException;
@@ -72,12 +71,10 @@ public class Activator extends DependencyActivatorBase implements EtcdDiscoveryC
         
         m_zone = zone;
         m_node = node;
-        m_node = ServiceUtil.getFrameworkUUID(context);
         m_connectUrl = connectUrl;
         m_rootPath = rootPath;
 
-        if (!"".equals(m_zone) && !"".equals(m_node)
-        		&& !"".equals(m_connectUrl)) {
+        if (!"".equals(m_connectUrl)) {
             registerDiscoveryService();
         }
         registerConfigurationService();
@@ -110,8 +107,7 @@ public class Activator extends DependencyActivatorBase implements EtcdDiscoveryC
                 
 	            unregisterDiscoveryService();
 	            
-	            if (!"".equals(m_zone) && !"".equals(m_node)
-	            		&& !"".equals(m_connectUrl)) {
+	            if (!"".equals(m_connectUrl)) {
 	            	registerDiscoveryService();
 	            }
             }
@@ -180,11 +176,11 @@ public class Activator extends DependencyActivatorBase implements EtcdDiscoveryC
     }
 
     private String getConfiguredZone(Dictionary<String, ?> properties) throws ConfigurationException {
-        return getConfigStringValue(m_context, CONFIG_ZONE, properties, null);
+        return getConfigStringValue(m_context, CONFIG_ZONE, properties, "");
     }
 
     private String getConfiguredNode(Dictionary<String, ?> properties) throws ConfigurationException {
-        return getConfigStringValue(m_context, CONFIG_NODE, properties, null);
+        return getConfigStringValue(m_context, CONFIG_NODE, properties, "");
     }
 
     private String getConfiguredConnectUrl(Dictionary<String, ?> properties) throws ConfigurationException {

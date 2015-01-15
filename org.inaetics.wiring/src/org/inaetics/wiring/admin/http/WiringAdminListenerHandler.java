@@ -4,9 +4,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.inaetics.wiring.AbstractComponentDelegate;
-import org.inaetics.wiring.NodeEndpointDescription;
 import org.inaetics.wiring.admin.WiringAdminListener;
 import org.inaetics.wiring.admin.WiringConstants;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
 import org.osgi.framework.ServiceReference;
 
 public class WiringAdminListenerHandler extends AbstractComponentDelegate {

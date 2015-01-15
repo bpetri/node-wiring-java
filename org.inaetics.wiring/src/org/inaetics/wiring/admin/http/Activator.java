@@ -18,26 +18,25 @@ package org.inaetics.wiring.admin.http;
 import static org.inaetics.wiring.ServiceUtil.getConfigIntValue;
 import static org.inaetics.wiring.ServiceUtil.getConfigStringValue;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.CONNECT_TIMEOUT_CONFIG_KEY;
+import static org.inaetics.wiring.admin.http.HttpAdminConstants.NODE_CONFIG_KEY;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.PATH_CONFIG_KEY;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.READ_TIMEOUT_CONFIG_KEY;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.SERVICE_PID;
-import static org.inaetics.wiring.admin.http.HttpAdminConstants.SUPPORTED_CONFIGURATION_TYPES;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.ZONE_CONFIG_KEY;
-import static org.inaetics.wiring.admin.http.HttpAdminConstants.NODE_CONFIG_KEY;
-import static org.osgi.service.remoteserviceadmin.RemoteConstants.REMOTE_CONFIGS_SUPPORTED;
+import static org.inaetics.wiring.discovery.DiscoveryConstants.DISCOVERY;
+import static org.inaetics.wiring.discovery.DiscoveryConstants.DISCOVERY_TYPE;
 
 import java.net.URL;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-import javax.swing.text.ZoneView;
-
 import org.apache.felix.dm.Component;
 import org.apache.felix.dm.DependencyActivatorBase;
 import org.apache.felix.dm.DependencyManager;
-import org.inaetics.wiring.NodeEndpointEventListener;
-import org.inaetics.wiring.admin.WiringAdminListener;
 import org.inaetics.wiring.admin.WiringAdmin;
+import org.inaetics.wiring.admin.WiringAdminListener;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointEventListener;
+import org.osgi.framework.AdminPermission;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.service.cm.ConfigurationException;
@@ -65,7 +64,8 @@ public final class Activator extends DependencyActivatorBase implements ManagedS
     private volatile DependencyManager m_dependencyManager;
 
     private volatile Component m_configurationComponent;
-    private volatile Component m_factoryComponent;
+    private volatile Component m_adminComponent;
+    private volatile Component m_listenerComponent;
     
     private volatile URL m_baseUrl;
     private volatile int m_connectTimeout;
@@ -158,43 +158,58 @@ public final class Activator extends DependencyActivatorBase implements ManagedS
         }
     }
 
-    private void registerFactoryService() {
+	private void registerFactoryService() {
 
-        String[] objectClass =
-                new String[] { WiringAdmin.class.getName(), NodeEndpointEventListener.class.getName() };
-    	
-    	Dictionary<String, Object> properties = new Hashtable<String, Object>();
+		WiringAdminFactory factory = new WiringAdminFactory(this);
 
-        WiringAdminFactory factory = new WiringAdminFactory(this);
+		Dictionary<String, Object> properties = new Hashtable<String, Object>();
+        properties.put(HttpAdminConstants.ADMIN, true);
+        properties.put(HttpAdminConstants.ADMIN_TYPE, "http");
 
-        Component component = createComponent()
-            .setInterface(objectClass, properties)
-            .setImplementation(factory)
-            .add(createServiceDependency()
-                .setService(HttpService.class)
-                .setRequired(true))
-            .add(createServiceDependency()
-                .setService(LogService.class)
-                .setRequired(false))
-            .add(createServiceDependency()
-                .setService(NodeEndpointEventListener.class)
-                .setCallbacks(factory.getEventEmitter(), "nodeEndpointEventlistenerAdded", "nodeEndpointEventlistenerRemoved")
-                .setRequired(false))
-        	.add(createServiceDependency()
-                .setService(WiringAdminListener.class)
-                .setCallbacks(factory.getWiringAdminListenerHandler(), "wiringAdminListenerAdded", "wiringAdminListenerRemoved")
-                .setRequired(false));
+		Component listenerComponent = createComponent()
+				.setInterface(NodeEndpointEventListener.class.getName(), properties)
+				.setImplementation(factory)
+				.add(createServiceDependency().setService(HttpService.class)
+						.setRequired(true))
+				.add(createServiceDependency().setService(LogService.class)
+						.setRequired(false))
+				.add(createServiceDependency()
+						.setService(NodeEndpointEventListener.class)
+						.setCallbacks(factory.getEventEmitter(),
+								"nodeEndpointEventListenerAdded",
+								"nodeEndpointEventListenerRemoved")
+						.setRequired(false))
+				.add(createServiceDependency()
+						.setService(WiringAdminListener.class)
+						.setCallbacks(factory.getWiringAdminListenerHandler(),
+								"wiringAdminListenerAdded",
+								"wiringAdminListenerRemoved")
+						.setRequired(false));
 
-        m_factoryComponent = component;
-        m_dependencyManager.add(component);
-    }
+		m_listenerComponent = listenerComponent;
+		m_dependencyManager.add(listenerComponent);
+
+		Component adminComponent = createComponent()
+				.setInterface(WiringAdmin.class.getName(), null)
+				.setImplementation(factory);
+
+		m_adminComponent = adminComponent;
+		m_dependencyManager.add(adminComponent);
+	}
 
     private void unregisterFactoryService() {
-        Component component = m_factoryComponent;
-        m_factoryComponent = null;
+        Component component = m_adminComponent;
+        m_adminComponent = null;
         if (component != null) {
             m_dependencyManager.remove(component);
         }
+
+        component = m_listenerComponent;
+        m_listenerComponent = null;
+        if (component != null) {
+            m_dependencyManager.remove(component);
+        }
+    
     }
 
     private URL parseConfiguredBaseUrl(Dictionary<String, ?> properties) throws ConfigurationException {

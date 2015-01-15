@@ -18,12 +18,8 @@ package org.inaetics.wiring.admin.http;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,10 +33,8 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.inaetics.wiring.AbstractComponentDelegate;
-import org.inaetics.wiring.NodeEndpointDescription;
 import org.inaetics.wiring.admin.WiringAdminListener;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
 
 /**
  * RSA component that handles all server endpoints.

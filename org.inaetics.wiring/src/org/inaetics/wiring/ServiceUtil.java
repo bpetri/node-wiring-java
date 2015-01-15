@@ -16,9 +16,7 @@
 package org.inaetics.wiring;
 
 import java.net.URL;
-import java.util.Collection;
 import java.util.Dictionary;
-import java.util.Iterator;
 import java.util.UUID;
 
 import org.osgi.framework.BundleContext;
@@ -51,37 +49,6 @@ public final class ServiceUtil {
             }
             return uuid;
         }
-    }
-
-    /**
-     * Returns String[] for a String+ service property value. The value must be of
-     * type String, String[] or Collection&gt;String&lt;.
-     * 
-     * @param value an object of a valid type, can be {@code null}
-     * @return a String[] containing the String+ entries
-     * @throws IllegalArgumentException if the value type is invalid
-     */
-    public static String[] getStringPlusValue(Object value) {
-        if (value == null) {
-            return new String[] {};
-        }
-        if (value instanceof String) {
-            return new String[] { (String) value };
-        }
-        if (value instanceof String[]) {
-            return (String[]) value;
-        }
-        if (value instanceof Collection<?>) {
-            Collection<?> col = (Collection<?>) value;
-            Iterator<?> iter = col.iterator();
-            while (iter.hasNext()) {
-                if (!(iter.next() instanceof String)) {
-                    throw new IllegalArgumentException("Not a valid String+ property value: " + value);
-                }
-            }
-            return col.toArray(new String[col.size()]);
-        }
-        throw new IllegalArgumentException("Not a valid String+ property value: " + value);
     }
 
     public static String getServletAlias(URL url) {

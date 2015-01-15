@@ -15,13 +15,15 @@
  */
 package org.inaetics.wiring.admin.http;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.inaetics.wiring.AbstractComponentDelegate;
-import org.inaetics.wiring.NodeEndpointDescription;
-import org.inaetics.wiring.NodeEndpointEvent;
-import org.inaetics.wiring.NodeEndpointEventListener;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointEvent;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointEventListener;
 import org.osgi.framework.ServiceReference;
 
 /**
@@ -35,8 +37,10 @@ public final class NodeEndpointEventEmitter extends AbstractComponentDelegate {
 	public static final int EVENT_EXPORT_REMOVED = 2;
 	
     private final Map<ServiceReference<?>, NodeEndpointEventListener> m_nodeListeners =
-        new ConcurrentHashMap<ServiceReference<?>, NodeEndpointEventListener>();
+    		new ConcurrentHashMap<ServiceReference<?>, NodeEndpointEventListener>();
 
+    private final Set<NodeEndpointDescription> m_endpoints =
+    		Collections.newSetFromMap(new ConcurrentHashMap<NodeEndpointDescription, Boolean>());
 
     public NodeEndpointEventEmitter(WiringAdminFactory adminManager) {
         super(adminManager);
@@ -46,6 +50,9 @@ public final class NodeEndpointEventEmitter extends AbstractComponentDelegate {
     protected final void nodeEndpointEventListenerAdded(ServiceReference<?> reference, NodeEndpointEventListener listener) {
         logDebug("NodeEndpointEventListener added %s", reference);
         m_nodeListeners.put(reference, listener);
+        for (NodeEndpointDescription endpoint : m_endpoints) {
+        	listener.nodeChanged(new NodeEndpointEvent(NodeEndpointEvent.ADDED, endpoint));
+        }
     }
 
     // Dependency Manager callback method
@@ -60,9 +67,13 @@ public final class NodeEndpointEventEmitter extends AbstractComponentDelegate {
     	NodeEndpointEvent event = null;
     	switch (type) {
 	    	case EVENT_EXPORT_ADDED:
-	    		event = new NodeEndpointEvent(NodeEndpointEvent.ADDED, endpointDescription); break;
+	    		event = new NodeEndpointEvent(NodeEndpointEvent.ADDED, endpointDescription);
+	    		m_endpoints.add(endpointDescription);
+	    		break;
 	    	case EVENT_EXPORT_REMOVED:
-	    		event = new NodeEndpointEvent(NodeEndpointEvent.REMOVED, endpointDescription); break;
+	    		event = new NodeEndpointEvent(NodeEndpointEvent.REMOVED, endpointDescription);
+	    		m_endpoints.remove(endpointDescription);
+	    		break;
     	}
 
     	if (event != null) {

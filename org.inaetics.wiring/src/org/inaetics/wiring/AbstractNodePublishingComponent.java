@@ -23,6 +23,9 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointEvent;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointEventListener;
 import org.osgi.framework.ServiceReference;
 
 /**

@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.inaetics.wiring.AbstractComponentDelegate;
-import org.inaetics.wiring.NodeEndpointDescription;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
 import org.osgi.framework.ServiceFactory;
 
 /**

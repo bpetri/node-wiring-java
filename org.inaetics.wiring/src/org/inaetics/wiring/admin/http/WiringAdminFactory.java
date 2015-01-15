@@ -18,11 +18,13 @@ package org.inaetics.wiring.admin.http;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.inaetics.wiring.AbstractComponent;
-import org.inaetics.wiring.NodeEndpointEvent;
-import org.inaetics.wiring.NodeEndpointEventListener;
 import org.inaetics.wiring.admin.WiringAdmin;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointEvent;
+import org.inaetics.wiring.nodeEndpoint.NodeEndpointEventListener;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceFactory;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.http.HttpService;
 
@@ -31,7 +33,7 @@ import org.osgi.service.http.HttpService;
  * 
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */
-public final class WiringAdminFactory extends AbstractComponent implements ServiceFactory<WiringAdmin>, NodeEndpointEventListener {
+public final class WiringAdminFactory extends AbstractComponent implements ServiceFactory<Object>, NodeEndpointEventListener {
 
     private final ConcurrentHashMap<Bundle, WiringAdminImpl> m_instances =
         new ConcurrentHashMap<Bundle, WiringAdminImpl>();
@@ -47,6 +49,8 @@ public final class WiringAdminFactory extends AbstractComponent implements Servi
     private final HttpClientEndpointFactory m_clientEndpointFactory;
 
     private volatile HttpService m_httpService;
+    
+    private volatile boolean m_started = false;
 
     public WiringAdminFactory(HttpAdminConfiguration configuration) {
         super("admin", "http");
@@ -60,7 +64,11 @@ public final class WiringAdminFactory extends AbstractComponent implements Servi
 
     @Override
     protected void startComponent() throws Exception {
-        m_eventEmitter.start();
+    	
+    	if(m_started) return;
+    	m_started = true;
+        
+    	m_eventEmitter.start();
         m_serverEndpointHandler.start();
         m_clientEndpointFactory.start();
         m_endpointEventHandler.start();
@@ -69,6 +77,10 @@ public final class WiringAdminFactory extends AbstractComponent implements Servi
 
     @Override
     protected void stopComponent() throws Exception {
+    	
+    	if(!m_started) return;
+    	m_started = false;
+    	
         m_eventEmitter.stop();
         m_serverEndpointHandler.stop();
         m_clientEndpointFactory.stop();
@@ -77,24 +89,36 @@ public final class WiringAdminFactory extends AbstractComponent implements Servi
     }
 
     @Override
-    public WiringAdmin getService(Bundle bundle, ServiceRegistration<WiringAdmin> registration) {
+    public Object getService(Bundle bundle, ServiceRegistration<Object> registration) {
 
-        WiringAdminImpl instance = new WiringAdminImpl(this, m_configuration);
-        try {
-            instance.start();
-            WiringAdminImpl previous = m_instances.put(bundle, instance);
-            assert previous == null; // framework should guard against this
-            return instance;
-        }
-        catch (Exception e) {
-            logError("Exception while instantiating admin instance!", e);
-            return null;
-        }
+    	ServiceReference<?> reference = registration.getReference();
+    	String[] objectClassProperty = (String[]) reference.getProperty(Constants.OBJECTCLASS);
+    	String objectClass = objectClassProperty[0];
+    	
+    	if (objectClass.equals(NodeEndpointEventListener.class.getName())) {
+    		return this;
+    	}
+    	
+    	if (objectClass.equals(WiringAdmin.class.getName())) {
+	    	WiringAdminImpl instance = new WiringAdminImpl(this, m_configuration);
+	        try {
+	            instance.start();
+	            WiringAdminImpl previous = m_instances.put(bundle, instance);
+	            assert previous == null; // framework should guard against this
+	            return instance;
+	        }
+	        catch (Exception e) {
+	            logError("Exception while instantiating admin instance!", e);
+	            return null;
+	        }
+    	}
+    	
+    	return null;
     }
 
     @Override
-    public void ungetService(Bundle bundle, ServiceRegistration<WiringAdmin> registration,
-        WiringAdmin service) {
+    public void ungetService(Bundle bundle, ServiceRegistration<Object> registration,
+        Object service) {
 
         WiringAdminImpl instance = m_instances.remove(bundle);
         try {

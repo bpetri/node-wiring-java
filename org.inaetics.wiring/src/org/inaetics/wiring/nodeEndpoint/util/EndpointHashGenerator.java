@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.inaetics.wiring;
-
-import static org.inaetics.wiring.ServiceUtil.getStringPlusValue;
+package org.inaetics.wiring.nodeEndpoint.util;
 
 import java.lang.reflect.Array;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -139,4 +139,36 @@ public final class EndpointHashGenerator {
             digest.update(",".getBytes());
         }
     }
+    
+    /**
+     * Returns String[] for a String+ service property value. The value must be of
+     * type String, String[] or Collection&gt;String&lt;.
+     * 
+     * @param value an object of a valid type, can be {@code null}
+     * @return a String[] containing the String+ entries
+     * @throws IllegalArgumentException if the value type is invalid
+     */
+    public static String[] getStringPlusValue(Object value) {
+        if (value == null) {
+            return new String[] {};
+        }
+        if (value instanceof String) {
+            return new String[] { (String) value };
+        }
+        if (value instanceof String[]) {
+            return (String[]) value;
+        }
+        if (value instanceof Collection<?>) {
+            Collection<?> col = (Collection<?>) value;
+            Iterator<?> iter = col.iterator();
+            while (iter.hasNext()) {
+                if (!(iter.next() instanceof String)) {
+                    throw new IllegalArgumentException("Not a valid String+ property value: " + value);
+                }
+            }
+            return col.toArray(new String[col.size()]);
+        }
+        throw new IllegalArgumentException("Not a valid String+ property value: " + value);
+    }
+    
 }

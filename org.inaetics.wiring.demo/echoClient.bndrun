@@ -20,16 +20,15 @@
 	org.inaetics.wiring.admin;version=latest,\
 	org.inaetics.wiring.admin.http;version=latest,\
 	org.inaetics.wiring.demo.echoClient;version=latest,\
-	org.inaetics.wiring.discovery.etcd;version=latest
+	org.inaetics.wiring.discovery.etcd;version=latest,\
+	org.inaetics.wiring.nodeEndpoint;version=latest
 
 
 -runproperties: \
-  org.apache.felix.http.host=localhost,\
-  org.osgi.service.http.port=8082,\
-  amdatu.remote.logging.level=5,\
-  amdatu.remote.console.level=5,\
-  org.inaetics.wiring.discovery.etcd.connecturl=http://172.17.8.20:4001,\
-  org.inaetics.wiring.discovery.etcd.rootpath=/inaeticsDiscovery,\
-  org.inaetics.wiring.admin.http.zone=zone1,\
-  org.inaetics.wiring.admin.http.node=node2
+	org.inaetics.wiring.discovery.etcd.connecturl=http://172.17.8.20:4001,\
+	org.inaetics.wiring.discovery.etcd.rootpath=/inaetics/discovery,\
+	org.inaetics.wiring.admin.http.zone=zone1,\
+	org.inaetics.wiring.admin.http.node=node2,\
+	org.apache.felix.http.host=localhost,\
+	org.osgi.service.http.port=8082
   

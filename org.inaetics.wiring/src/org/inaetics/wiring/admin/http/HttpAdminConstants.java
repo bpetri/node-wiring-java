@@ -77,4 +77,8 @@ public interface HttpAdminConstants {
      */
     String[] SUPPORTED_CONFIGURATION_TYPES = new String[] { CONFIGURATION_TYPE };
 
+    /** Indicates that a service is actually a admin service, should have a value of "true". */
+    String ADMIN = "admin";
+    /** Indicates what kind of discovery service is provided. */
+    String ADMIN_TYPE = "admin.type";
 }

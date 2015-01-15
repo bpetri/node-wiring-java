@@ -1,4 +1,4 @@
-package org.inaetics.wiring;
+package org.inaetics.wiring.nodeEndpoint;
 
 /**
  * An Node Event.
