@@ -154,17 +154,17 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
         // zones
     	for (EtcdNode zoneNode : response.node.nodes) {
     		if(zoneNode.dir && zoneNode.nodes != null) {
-    			String zone = zoneNode.key;
+    			String zone = getLastPart(zoneNode.key);
     			
     			// nodes
             	for (EtcdNode nodeNode : zoneNode.nodes) {
             		if(nodeNode.dir && nodeNode.nodes != null) {
-            			String node = nodeNode.key;
+            			String node = getLastPart(nodeNode.key);
 
             			// path
                     	for (EtcdNode pathNode : nodeNode.nodes) {
                     		if(pathNode.dir && pathNode.nodes != null) {
-                    			String path = pathNode.key;
+                    			String path = getLastPart(pathNode.key);
 
                     			// endpoint scheme
                             	for (EtcdNode schemeNode : pathNode.nodes) {
@@ -173,8 +173,8 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 	                        			// endpoint scheme
 	                                	for (EtcdNode endpointNode : schemeNode.nodes) {
 	                                		
-	                                		String key = endpointNode.key;
-	                                		if(key.endsWith(SEP + ENDPOINT_KEY_URL)) {
+	                                		String key = getLastPart(endpointNode.key);
+	                                		if(key.equals(ENDPOINT_KEY_URL)) {
 	                                			String endpoint = endpointNode.value;
 	                                			try {
 	                                				logDebug("Adding %s %s %s %s", zone, node, path, endpoint);
@@ -203,6 +203,13 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     	}
     	
     	return endpoints;
+    }
+    
+    private String getLastPart(String s) {
+    	if (!s.contains(SEP)) {
+    		return s;
+    	}
+    	return s.substring(s.lastIndexOf(SEP) + 1);
     }
     
     private void handleDiscoveryNodeChange(EtcdKeysResponse response) throws Exception {
@@ -416,7 +423,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
         	putDir(getNodePath(node));
         	
         	// put node metadata
-        	m_etcd.put(getNodePath(node) + "metadata", "{test : test}").ttl(ETCD_REGISTRATION_TTL).send();
+        	m_etcd.put(getNodePath(node) + ENDPOINT_KEY_METADATA, "{test : test}").ttl(ETCD_REGISTRATION_TTL).send();
         }
         
         
@@ -435,7 +442,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
         	m_etcd.put(getEndpointUrlPath(endpoint), endpoint.getEndpoint().toString()).ttl(ETCD_REGISTRATION_TTL).send();
         	
         	// put endpoint metadata
-        	m_etcd.put(getEndpointPath(endpoint) + "metadata", "{test : test}").ttl(ETCD_REGISTRATION_TTL).send();
+        	m_etcd.put(getEndpointPath(endpoint) + ENDPOINT_KEY_METADATA, "{test : test}").ttl(ETCD_REGISTRATION_TTL).send();
         }
         
         private void putDir(String path) throws IOException {
