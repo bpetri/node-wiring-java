@@ -1,5 +1,7 @@
 package org.inaetics.wiring.admin.http;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,7 +43,12 @@ public class WiringAdminListenerHandler extends AbstractComponentDelegate {
 		endpoint.setZone(m_configuration.getZone());
 		endpoint.setNode(m_configuration.getNode());
 		endpoint.setPath(path);
-		endpoint.setEndpoint(m_configuration.getBaseUrl());
+		endpoint.setProtocol(HttpAdminConstants.PROTOCOL);
+		try {
+			endpoint.setUrl(new URL(m_configuration.getBaseUrl().toString() + path));
+		} catch (MalformedURLException e) {
+			logError("error creating endpoint url", e);
+		}
 		
 		// create http handler
 		m_serverEndpointHandler.addEndpoint(endpoint, listener);

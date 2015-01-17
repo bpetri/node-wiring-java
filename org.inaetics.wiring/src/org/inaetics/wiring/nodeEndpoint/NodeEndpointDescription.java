@@ -5,7 +5,6 @@ package org.inaetics.wiring.nodeEndpoint;
 
 import java.net.URL;
 import java.util.Map;
-import java.util.UUID;
 
 import org.inaetics.wiring.nodeEndpoint.util.HashUtil;
 
@@ -15,18 +14,13 @@ import org.inaetics.wiring.nodeEndpoint.util.HashUtil;
  */
 public class NodeEndpointDescription {
 	
-	private String id;
 	private String m_zone;
 	private String m_node;
 	private String m_path;
-	private URL m_endpoint;
+	private String m_protocol;
+	private URL m_url;
 	
 	public NodeEndpointDescription() {
-		id = UUID.randomUUID().toString();
-	}
-	
-	public String getId() {
-		return id;
 	}
 	
 	public String getZone() {
@@ -53,12 +47,20 @@ public class NodeEndpointDescription {
 		this.m_path = path;
 	}
 
-	public URL getEndpoint() {
-		return m_endpoint;
+	public String getProtocol() {
+		return m_protocol;
 	}
 
-	public void setEndpoint(URL endpoint) {
-		this.m_endpoint = endpoint;
+	public void setProtocol(String protocol) {
+		this.m_protocol = protocol;
+	}
+
+	public URL getUrl() {
+		return m_url;
+	}
+
+	public void setUrl(URL endpoint) {
+		this.m_url = endpoint;
 	}
 
 	public Map<String, ?> getProperties() {
@@ -72,14 +74,18 @@ public class NodeEndpointDescription {
 	
 	public static String getDigest(NodeEndpointDescription node) {
 		// TODO add properties
-		return HashUtil.hash(node.getZone() + node.getNode() + node.getPath() + node.getEndpoint());
+		return HashUtil.hash(node.getZone() + node.getNode() + node.getPath() + node.getUrl());
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((m_node == null) ? 0 : m_node.hashCode());
+		result = prime * result + ((m_path == null) ? 0 : m_path.hashCode());
+		result = prime * result
+				+ ((m_protocol == null) ? 0 : m_protocol.hashCode());
+		result = prime * result + ((m_zone == null) ? 0 : m_zone.hashCode());
 		return result;
 	}
 
@@ -92,19 +98,34 @@ public class NodeEndpointDescription {
 		if (getClass() != obj.getClass())
 			return false;
 		NodeEndpointDescription other = (NodeEndpointDescription) obj;
-		if (id == null) {
-			if (other.id != null)
+		if (m_node == null) {
+			if (other.m_node != null)
 				return false;
-		} else if (!id.equals(other.id))
+		} else if (!m_node.equals(other.m_node))
+			return false;
+		if (m_path == null) {
+			if (other.m_path != null)
+				return false;
+		} else if (!m_path.equals(other.m_path))
+			return false;
+		if (m_protocol == null) {
+			if (other.m_protocol != null)
+				return false;
+		} else if (!m_protocol.equals(other.m_protocol))
+			return false;
+		if (m_zone == null) {
+			if (other.m_zone != null)
+				return false;
+		} else if (!m_zone.equals(other.m_zone))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "NodeEndpointDescription [id=" + id + ", m_zone=" + m_zone
-				+ ", m_node=" + m_node + ", m_path=" + m_path + ", m_endpoint="
-				+ m_endpoint + "]";
+		return "NodeEndpointDescription [m_zone=" + m_zone + ", m_node="
+				+ m_node + ", m_path=" + m_path + ", m_protocol=" + m_protocol
+				+ ", m_url=" + m_url + "]";
 	}
 		
 }

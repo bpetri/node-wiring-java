@@ -47,19 +47,6 @@ public class NodeEndpointEvent {
 	public static final int				REMOVED				= 0x00000002;
 
 	/**
-	 * The properties of an endpoint have been modified.
-	 * <p/>
-	 * 
-	 * This {@code NodeEndpointEvent} type indicates that the properties of an
-	 * existing endpoint have been modified. The endpoint is represented by the
-	 * associated {@link NodeEndpointDescription} object and its properties can be
-	 * obtained via {@link NodeEndpointDescription#getProperties()}. The endpoint
-	 * properties still match the filters as specified in the
-	 * {@link NodeEndpointEventListener#ENDPOINT_LISTENER_SCOPE} filter.
-	 */
-	public static final int				MODIFIED			= 0x00000004;
-
-	/**
 	 * Reference to the associated endpoint description.
 	 */
 	private final NodeEndpointDescription	endpoint;

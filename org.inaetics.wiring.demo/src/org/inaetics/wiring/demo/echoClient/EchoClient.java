@@ -21,6 +21,7 @@ public class EchoClient implements WiringAdminListener {
 	public void sendMessage(String zone, String node, String path, String message) {
 
 		Message messageObject = new Message();
+		messageObject.setLocalPath("echoClient");
 		messageObject.setRemoteZone(zone);
 		messageObject.setRemoteNode(node);
 		messageObject.setRemotePath(path);

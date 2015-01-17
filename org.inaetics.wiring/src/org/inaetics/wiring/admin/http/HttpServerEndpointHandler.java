@@ -108,7 +108,7 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
 
         m_lock.writeLock().lock();
         try {
-            serv = m_handlers.remove(endpoint.getId());
+            serv = m_handlers.remove(endpoint);
         }
         finally {
             m_lock.writeLock().unlock();

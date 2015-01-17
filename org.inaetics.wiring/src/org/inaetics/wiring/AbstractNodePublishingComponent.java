@@ -226,36 +226,6 @@ public abstract class AbstractNodePublishingComponent extends AbstractComponent 
     }
 
     /**
-     * Call Node modified on all registered listeners with as scope that matches the specified nodeDescription.
-     * 
-     * @param description The Node Description
-     * @throws IllegalStateException if called with an unknown Node Description
-     */
-    protected final void nodeModified(final NodeEndpointDescription node) {
-
-        executeTask(new Runnable() {
-
-            @Override
-            public void run() {
-
-                logDebug("Modifying Node: %s", node);
-                if (!m_nodes.remove(node)) {
-                    throw new IllegalStateException("Trying to modify unknown Node Description: " + node);
-                }
-                m_nodes.add(node);
-                for (AbstractListenerHandler<?> handler : m_listeners.values()) {
-                    try {
-                        handler.nodeModified(node);
-                    }
-                    catch (Exception e) {
-                        logWarning("Caught exception while invoking Node removed on %s", e, handler.getReference());
-                    }
-                }
-            }
-        });
-    }
-    
-    /**
      * Abstract handler for listeners that encapsulates filter parsing, caching and matching
      * <p>
      * This implementation is not thread-safe. Synchronization is handled from the outside.
@@ -315,13 +285,6 @@ public abstract class AbstractNodePublishingComponent extends AbstractComponent 
          */
         protected abstract void nodeRemoved(NodeEndpointDescription node);
 
-        /**
-         * Invoke the relevant callback on the listener.
-         * 
-         * @param node The Node Description
-         */
-        protected abstract void nodeModified(NodeEndpointDescription node);
-
     }
 
     /**
@@ -332,6 +295,10 @@ public abstract class AbstractNodePublishingComponent extends AbstractComponent 
         public NodeEndpointEventListenerHandler(ServiceReference<NodeEndpointEventListener> reference,
             NodeEndpointEventListener listener, Collection<NodeEndpointDescription> nodes) throws Exception {
             super(reference, listener, nodes);
+            
+            for(NodeEndpointDescription node : nodes) {
+            	nodeAdded(node);
+            }
         }
 
         @Override
@@ -346,14 +313,6 @@ public abstract class AbstractNodePublishingComponent extends AbstractComponent 
         protected void nodeRemoved(NodeEndpointDescription description) {
             try {
                 getListener().nodeChanged(new NodeEndpointEvent(NodeEndpointEvent.REMOVED, description));
-            }
-            catch (Exception e) {}
-        }
-
-        @Override
-        protected void nodeModified(NodeEndpointDescription description) {
-            try {
-                getListener().nodeChanged(new NodeEndpointEvent(NodeEndpointEvent.MODIFIED, description));
             }
             catch (Exception e) {}
         }

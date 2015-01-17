@@ -15,9 +15,6 @@
  */
 package org.inaetics.wiring.discovery;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.inaetics.wiring.AbstractNodePublishingComponent;
 import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
 import org.inaetics.wiring.nodeEndpoint.NodeEndpointEvent;
@@ -33,8 +30,6 @@ import org.inaetics.wiring.nodeEndpoint.NodeEndpointEventListener;
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */
 public abstract class AbstractDiscovery extends AbstractNodePublishingComponent implements NodeEndpointEventListener {
-
-    private final Map<NodeEndpointDescription, String> m_discoveredNodes = new HashMap<NodeEndpointDescription, String>();
 
     public AbstractDiscovery(String name) {
         super("discovery", name);
@@ -74,16 +69,6 @@ public abstract class AbstractDiscovery extends AbstractNodePublishingComponent 
                     }
                 });
                 break;
-            case NodeEndpointEvent.MODIFIED:
-                executeTask(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        logInfo("Modified local node: %s", event.getEndpoint());
-                        modifyPublishedNode(event.getEndpoint());
-                    }
-                });
-                break;
             default:
                 throw new IllegalStateException("Recieved event with unknown type " + event.getType());
         }
@@ -101,19 +86,8 @@ public abstract class AbstractDiscovery extends AbstractNodePublishingComponent 
 
             @Override
             public void run() {
-                String newhash = node.getDigest();
-                String oldhash = m_discoveredNodes.get(node);
-                if (oldhash == null) {
-                    logInfo("Adding remote node: %s", node);
-                    m_discoveredNodes.put(node, newhash);
-                    nodeAdded(node);
-                }
-                else if (!oldhash.equals(newhash)) {
-                    logInfo("Mofifying remote node: %s", node);
-                    m_discoveredNodes.put(node, newhash);
-                    nodeModified(node);
-                }
-
+                logInfo("Adding remote node: %s", node);
+                nodeAdded(node);
             }
         });
     }
@@ -131,7 +105,6 @@ public abstract class AbstractDiscovery extends AbstractNodePublishingComponent 
             @Override
             public void run() {
                 logInfo("Removed remote node: %s", node);
-                m_discoveredNodes.remove(node);
                 nodeRemoved(node);
             }
         });
@@ -164,11 +137,4 @@ public abstract class AbstractDiscovery extends AbstractNodePublishingComponent 
      */
     protected abstract void removePublishedNode(NodeEndpointDescription node);
 
-    /**
-     * Called when an exported service is modified. The concrete implementation is responsible for updating
-     * the service in its service registry.
-     * 
-     * @param node The service Node Description
-     */
-    protected abstract void modifyPublishedNode(NodeEndpointDescription node);
 }

@@ -104,7 +104,7 @@ public final class HttpClientEndpoint {
         ExceptionWrapper exception = null;
         try {
         	
-            connection = (HttpURLConnection) m_endpoint.getEndpoint().openConnection();
+            connection = (HttpURLConnection) m_endpoint.getUrl().openConnection();
             connection.setRequestMethod("POST");
             connection.setUseCaches(false);
             connection.setDoOutput(true);
@@ -169,7 +169,6 @@ public final class HttpClientEndpoint {
      */
     private void writeMessageJSON(OutputStream out, FullMessage message) throws IOException {
         JsonGenerator gen = m_JsonFactory.createJsonGenerator(out);
-        gen.writeStartObject();
         gen.writeObject(message);
         gen.flush();
         gen.close();

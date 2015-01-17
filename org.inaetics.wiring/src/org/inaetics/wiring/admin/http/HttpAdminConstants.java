@@ -81,4 +81,6 @@ public interface HttpAdminConstants {
     String ADMIN = "admin";
     /** Indicates what kind of discovery service is provided. */
     String ADMIN_TYPE = "admin.type";
+    
+    String PROTOCOL = "inaetics-http;version=1.0";
 }

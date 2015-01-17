@@ -15,7 +15,7 @@ public class EchoService implements WiringAdminListener {
 
 		logService.log(LogService.LOG_DEBUG, "received message: " + message);
 		message.setMessage("echo: " + message.getMessage());
-	
+		
 		try {
 			wiringAdmin.sendMessage(message);
 		} catch (Throwable e) {

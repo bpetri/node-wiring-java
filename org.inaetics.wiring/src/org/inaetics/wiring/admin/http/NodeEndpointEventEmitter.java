@@ -41,13 +41,22 @@ public final class NodeEndpointEventEmitter extends AbstractComponentDelegate {
 
     private final Set<NodeEndpointDescription> m_endpoints =
     		Collections.newSetFromMap(new ConcurrentHashMap<NodeEndpointDescription, Boolean>());
+	
+    private WiringAdminFactory m_adminManager;
 
     public NodeEndpointEventEmitter(WiringAdminFactory adminManager) {
         super(adminManager);
+        m_adminManager = adminManager;
     }
 
     // Dependency Manager callback method
     protected final void nodeEndpointEventListenerAdded(ServiceReference<?> reference, NodeEndpointEventListener listener) {
+    	
+    	if(listener == m_adminManager) {
+    		// skip ourself
+    		return;
+    	}
+    	
         logDebug("NodeEndpointEventListener added %s", reference);
         m_nodeListeners.put(reference, listener);
         for (NodeEndpointDescription endpoint : m_endpoints) {

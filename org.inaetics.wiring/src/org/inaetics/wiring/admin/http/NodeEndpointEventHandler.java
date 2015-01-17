@@ -34,8 +34,6 @@ public class NodeEndpointEventHandler extends AbstractComponentDelegate implemen
 				endpointAdded(event.getEndpoint()); break;
 			case NodeEndpointEvent.REMOVED:
 				endpointRemoved(event.getEndpoint()); break;
-			case NodeEndpointEvent.MODIFIED:
-				endpointModified(event.getEndpoint()); break;
 		}
 	}
 
@@ -49,9 +47,4 @@ public class NodeEndpointEventHandler extends AbstractComponentDelegate implemen
 		m_clientFactory.removeEndpoint(endpoint);
 	}
 	
-	private void endpointModified(NodeEndpointDescription endpoint) {
-		endpointRemoved(endpoint);
-		endpointAdded(endpoint);
-	}
-
 }
