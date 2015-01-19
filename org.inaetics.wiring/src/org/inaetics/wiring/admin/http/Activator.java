@@ -173,9 +173,9 @@ public final class Activator extends DependencyActivatorBase implements ManagedS
 						.setRequired(false))
 				.add(createServiceDependency()
 						.setService(NodeEndpointEventListener.class)
-						.setCallbacks(factory.getEventEmitter(),
-								"nodeEndpointEventListenerAdded",
-								"nodeEndpointEventListenerRemoved")
+						.setCallbacks(factory,
+								"eventListenerAdded",
+								"eventListenerRemoved")
 						.setRequired(false))
 				.add(createServiceDependency()
 						.setService(WiringAdminListener.class)

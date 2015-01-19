@@ -174,7 +174,7 @@ public abstract class AbstractNodePublishingComponent extends AbstractComponent 
      * @param description The Node Description
      * @throws IllegalStateException if called with a previsouly added Node Description
      */
-    protected final void nodeAdded(final NodeEndpointDescription description) {
+    public final void nodeAdded(final NodeEndpointDescription description) {
 
         executeTask(new Runnable() {
 
@@ -202,7 +202,7 @@ public abstract class AbstractNodePublishingComponent extends AbstractComponent 
      * @param node The Node Description
      * @throws IllegalStateException if called with an unknown Node Description
      */
-    protected final void nodeRemoved(final NodeEndpointDescription node) {
+    public final void nodeRemoved(final NodeEndpointDescription node) {
 
         executeTask(new Runnable() {
 

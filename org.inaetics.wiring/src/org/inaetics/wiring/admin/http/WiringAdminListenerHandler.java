@@ -54,7 +54,7 @@ public class WiringAdminListenerHandler extends AbstractComponentDelegate {
 		m_serverEndpointHandler.addEndpoint(endpoint, listener);
 		
 		// emit event
-		m_manager.getEventEmitter().emitNodeEndpointEvent(NodeEndpointEventEmitter.EVENT_EXPORT_ADDED, endpoint);
+		m_manager.nodeAdded(endpoint);
 
 		m_wiringAdminListeners.put(listener, endpoint);
 
@@ -72,7 +72,7 @@ public class WiringAdminListenerHandler extends AbstractComponentDelegate {
 		m_serverEndpointHandler.removeEndpoint(endpoint);
 		
 		// emit event
-		m_manager.getEventEmitter().emitNodeEndpointEvent(NodeEndpointEventEmitter.EVENT_EXPORT_REMOVED, endpoint);
+		m_manager.nodeRemoved(endpoint);
 
 		m_wiringAdminListeners.remove(listener);
 		

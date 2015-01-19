@@ -17,7 +17,7 @@ package org.inaetics.wiring.admin.http;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.inaetics.wiring.AbstractComponent;
+import org.inaetics.wiring.AbstractNodePublishingComponent;
 import org.inaetics.wiring.admin.WiringAdmin;
 import org.inaetics.wiring.nodeEndpoint.NodeEndpointEvent;
 import org.inaetics.wiring.nodeEndpoint.NodeEndpointEventListener;
@@ -33,14 +33,12 @@ import org.osgi.service.http.HttpService;
  * 
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */
-public final class WiringAdminFactory extends AbstractComponent implements ServiceFactory<Object>, NodeEndpointEventListener {
+public final class WiringAdminFactory extends AbstractNodePublishingComponent implements ServiceFactory<Object>, NodeEndpointEventListener {
 
     private final ConcurrentHashMap<Bundle, WiringAdminImpl> m_instances =
         new ConcurrentHashMap<Bundle, WiringAdminImpl>();
 
     private final HttpAdminConfiguration m_configuration;
-    
-    private final NodeEndpointEventEmitter m_eventEmitter;
     
     private final NodeEndpointEventHandler m_endpointEventHandler;
     private final WiringAdminListenerHandler m_wiringAdminListenerhandler;
@@ -53,9 +51,8 @@ public final class WiringAdminFactory extends AbstractComponent implements Servi
     private volatile boolean m_started = false;
 
     public WiringAdminFactory(HttpAdminConfiguration configuration) {
-        super("admin", "http");
+        super("admin ", "http");
         m_configuration = configuration;
-        m_eventEmitter = new NodeEndpointEventEmitter(this);
         m_serverEndpointHandler = new HttpServerEndpointHandler(this, m_configuration);
         m_clientEndpointFactory = new HttpClientEndpointFactory(this, m_configuration);
         m_endpointEventHandler = new NodeEndpointEventHandler(this, m_configuration, m_clientEndpointFactory);
@@ -68,7 +65,8 @@ public final class WiringAdminFactory extends AbstractComponent implements Servi
     	if(m_started) return;
     	m_started = true;
         
-    	m_eventEmitter.start();
+    	super.startComponent();
+    	
         m_serverEndpointHandler.start();
         m_clientEndpointFactory.start();
         m_endpointEventHandler.start();
@@ -81,11 +79,12 @@ public final class WiringAdminFactory extends AbstractComponent implements Servi
     	if(!m_started) return;
     	m_started = false;
     	
-        m_eventEmitter.stop();
         m_serverEndpointHandler.stop();
         m_clientEndpointFactory.stop();
         m_endpointEventHandler.stop();
         m_wiringAdminListenerhandler.stop();
+
+        super.stopComponent();
     }
 
     @Override
@@ -131,10 +130,6 @@ public final class WiringAdminFactory extends AbstractComponent implements Servi
         return m_httpService;
     }
 
-    NodeEndpointEventEmitter getEventEmitter() {
-        return m_eventEmitter;
-    }
-
     HttpServerEndpointHandler getServerEndpointHandler() {
         return m_serverEndpointHandler;
     }
@@ -155,5 +150,7 @@ public final class WiringAdminFactory extends AbstractComponent implements Servi
 	public void nodeChanged(NodeEndpointEvent event) {
 		getNodeEndpointEventHandler().nodeChanged(event);
 	}
+	
+	
 
 }

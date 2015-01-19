@@ -30,7 +30,6 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.inaetics.wiring.IOUtil;
-import org.inaetics.wiring.admin.Message;
 import org.inaetics.wiring.admin.WiringAdminListener;
 import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
 

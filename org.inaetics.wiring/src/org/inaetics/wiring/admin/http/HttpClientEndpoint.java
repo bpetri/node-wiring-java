@@ -22,16 +22,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
-import java.net.URL;
 
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.JavaType;
-import org.inaetics.wiring.admin.Message;
 import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
 import org.osgi.framework.ServiceException;
 
