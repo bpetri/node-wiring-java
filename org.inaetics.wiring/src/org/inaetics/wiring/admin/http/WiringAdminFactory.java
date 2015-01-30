@@ -17,10 +17,10 @@ package org.inaetics.wiring.admin.http;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.inaetics.wiring.AbstractNodePublishingComponent;
-import org.inaetics.wiring.admin.WiringAdmin;
-import org.inaetics.wiring.nodeEndpoint.NodeEndpointEvent;
-import org.inaetics.wiring.nodeEndpoint.NodeEndpointEventListener;
+import org.inaetics.wiring.NodeEndpointEvent;
+import org.inaetics.wiring.NodeEndpointEventListener;
+import org.inaetics.wiring.base.AbstractNodePublishingComponent;
+import org.inaetics.wiring.endpoint.WiringEndpoint;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceFactory;
@@ -98,7 +98,7 @@ public final class WiringAdminFactory extends AbstractNodePublishingComponent im
     		return this;
     	}
     	
-    	if (objectClass.equals(WiringAdmin.class.getName())) {
+    	if (objectClass.equals(WiringEndpoint.class.getName())) {
 	    	WiringAdminImpl instance = new WiringAdminImpl(this, m_configuration);
 	        try {
 	            instance.start();

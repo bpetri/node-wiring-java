@@ -1,12 +1,10 @@
 /**
  * 
  */
-package org.inaetics.wiring.nodeEndpoint;
+package org.inaetics.wiring;
 
 import java.net.URL;
 import java.util.Map;
-
-import org.inaetics.wiring.nodeEndpoint.util.HashUtil;
 
 /**
  * @author msluiter
@@ -68,15 +66,6 @@ public class NodeEndpointDescription {
 		return null;
 	}
 	
-	public String getDigest() {
-		return getDigest(this);
-	}
-	
-	public static String getDigest(NodeEndpointDescription node) {
-		// TODO add properties
-		return HashUtil.hash(node.getZone() + node.getNode() + node.getPath() + node.getUrl());
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;

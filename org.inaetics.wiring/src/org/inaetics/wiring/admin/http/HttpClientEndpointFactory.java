@@ -18,8 +18,8 @@ package org.inaetics.wiring.admin.http;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.inaetics.wiring.AbstractComponentDelegate;
-import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
+import org.inaetics.wiring.NodeEndpointDescription;
+import org.inaetics.wiring.base.AbstractComponentDelegate;
 import org.osgi.framework.ServiceFactory;
 
 /**

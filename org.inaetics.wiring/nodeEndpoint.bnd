@@ -1,5 +1,0 @@
-Bundle-Version: 0.1.0
-Export-Package:  \
-	org.inaetics.wiring.nodeEndpoint
-Private-Package:  \
-	org.inaetics.wiring.nodeEndpoint.util

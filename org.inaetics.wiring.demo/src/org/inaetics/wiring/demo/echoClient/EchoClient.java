@@ -1,13 +1,13 @@
 package org.inaetics.wiring.demo.echoClient;
 
-import org.inaetics.wiring.admin.Message;
-import org.inaetics.wiring.admin.WiringAdmin;
-import org.inaetics.wiring.admin.WiringAdminListener;
+import org.inaetics.wiring.endpoint.Message;
+import org.inaetics.wiring.endpoint.WiringEndpoint;
+import org.inaetics.wiring.endpoint.WiringEndpointListener;
 import org.osgi.service.log.LogService;
 
-public class EchoClient implements WiringAdminListener {
+public class EchoClient implements WiringEndpointListener {
 
-	private volatile WiringAdmin wiringAdmin;
+	private volatile WiringEndpoint wiringAdmin;
 	private volatile LogService logService;
 	
 	@Override

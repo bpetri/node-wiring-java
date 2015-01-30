@@ -1,7 +1,0 @@
-Bundle-Name: Inaetics Wiring - Wiring Admin
-Bundle-Version: 0.1.0
-
-DynamicImport-Package: *
-
-Export-Package:  \
-	org.inaetics.wiring.admin;version=0.1.0

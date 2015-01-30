@@ -1,4 +1,4 @@
-package org.inaetics.wiring.admin;
+package org.inaetics.wiring.endpoint;
 
 import java.util.Map;
 

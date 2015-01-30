@@ -1,6 +1,6 @@
 package org.inaetics.wiring.admin.http;
 
-import org.inaetics.wiring.admin.Message;
+import org.inaetics.wiring.endpoint.Message;
 
 public class FullMessage extends Message {
 	

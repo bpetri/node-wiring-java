@@ -32,9 +32,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.inaetics.wiring.AbstractComponentDelegate;
-import org.inaetics.wiring.admin.WiringAdminListener;
-import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
+import org.inaetics.wiring.NodeEndpointDescription;
+import org.inaetics.wiring.base.AbstractComponentDelegate;
+import org.inaetics.wiring.endpoint.WiringEndpointListener;
 
 /**
  * RSA component that handles all server endpoints.
@@ -84,7 +84,7 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
      * @param endpoint The Endpoint Description
      * @param listener 
      */
-    public HttpServerEndpoint addEndpoint(NodeEndpointDescription endpoint, WiringAdminListener listener) {
+    public HttpServerEndpoint addEndpoint(NodeEndpointDescription endpoint, WiringEndpointListener listener) {
 
         HttpServerEndpoint serverEndpoint = new HttpServerEndpoint(endpoint, listener);
 

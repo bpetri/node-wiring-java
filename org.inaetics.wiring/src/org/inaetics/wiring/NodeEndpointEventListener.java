@@ -1,4 +1,4 @@
-package org.inaetics.wiring.nodeEndpoint;
+package org.inaetics.wiring;
 
 /**
  * A white board service that represents a listener for nodes.

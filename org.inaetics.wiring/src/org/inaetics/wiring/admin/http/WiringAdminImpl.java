@@ -15,16 +15,16 @@
  */
 package org.inaetics.wiring.admin.http;
 
-import org.inaetics.wiring.AbstractComponentDelegate;
-import org.inaetics.wiring.admin.Message;
-import org.inaetics.wiring.admin.WiringAdmin;
+import org.inaetics.wiring.base.AbstractComponentDelegate;
+import org.inaetics.wiring.endpoint.Message;
+import org.inaetics.wiring.endpoint.WiringEndpoint;
 
 /**
  * Remote Service Admin instance implementation.
  * 
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */
-public final class WiringAdminImpl extends AbstractComponentDelegate implements WiringAdmin {
+public final class WiringAdminImpl extends AbstractComponentDelegate implements WiringEndpoint {
 
     private final WiringAdminFactory m_manager;
     private final HttpAdminConfiguration m_configuration;

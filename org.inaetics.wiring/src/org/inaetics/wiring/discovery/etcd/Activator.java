@@ -15,7 +15,7 @@
  */
 package org.inaetics.wiring.discovery.etcd;
 
-import static org.inaetics.wiring.ServiceUtil.getConfigStringValue;
+import static org.inaetics.wiring.base.ServiceUtil.getConfigStringValue;
 import static org.inaetics.wiring.discovery.DiscoveryUtil.createNodeListenerServiceProperties;
 
 import java.util.Dictionary;
@@ -25,7 +25,7 @@ import java.util.Properties;
 import org.apache.felix.dm.Component;
 import org.apache.felix.dm.DependencyActivatorBase;
 import org.apache.felix.dm.DependencyManager;
-import org.inaetics.wiring.nodeEndpoint.NodeEndpointEventListener;
+import org.inaetics.wiring.NodeEndpointEventListener;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.service.cm.ConfigurationException;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.inaetics.wiring;
+package org.inaetics.wiring.base;
 
 import java.net.URL;
 import java.util.Dictionary;

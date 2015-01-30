@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.inaetics.wiring.AbstractComponentDelegate;
-import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
-import org.inaetics.wiring.nodeEndpoint.NodeEndpointEvent;
-import org.inaetics.wiring.nodeEndpoint.NodeEndpointEventListener;
+import org.inaetics.wiring.NodeEndpointDescription;
+import org.inaetics.wiring.NodeEndpointEvent;
+import org.inaetics.wiring.NodeEndpointEventListener;
+import org.inaetics.wiring.base.AbstractComponentDelegate;
 
 public class NodeEndpointEventHandler extends AbstractComponentDelegate implements NodeEndpointEventListener {
 

@@ -29,9 +29,9 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.inaetics.wiring.IOUtil;
-import org.inaetics.wiring.admin.WiringAdminListener;
-import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
+import org.inaetics.wiring.NodeEndpointDescription;
+import org.inaetics.wiring.base.IOUtil;
+import org.inaetics.wiring.endpoint.WiringEndpointListener;
 
 /**
  * Servlet that represents a remoted local service.
@@ -46,10 +46,10 @@ public final class HttpServerEndpoint {
     private final JsonFactory m_jsonFactory = new JsonFactory(m_objectMapper);
 
     private NodeEndpointDescription m_endpoint;
-    private WiringAdminListener m_listener;
+    private WiringEndpointListener m_listener;
     private ServerEndpointProblemListener m_problemListener;
 
-    public HttpServerEndpoint(NodeEndpointDescription endpoint, WiringAdminListener listener) {
+    public HttpServerEndpoint(NodeEndpointDescription endpoint, WiringEndpointListener listener) {
     	m_endpoint = endpoint;
     	m_listener = listener;
     }

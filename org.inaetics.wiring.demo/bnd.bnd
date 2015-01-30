@@ -5,8 +5,7 @@
 	javax.servlet;version=2.5.0,\
 	junit.osgi;version=3.8.2,\
 	org.mockito.mockito-all;version=1.9,\
-	org.inaetics.wiring.admin;version=latest,\
 	org.apache.felix.gogo.runtime;version=0.10,\
-	org.inaetics.wiring.nodeEndpoint;version=latest
+	org.inaetics.wiring.endpoint;version=latest
 	
 -sub: *.bnd

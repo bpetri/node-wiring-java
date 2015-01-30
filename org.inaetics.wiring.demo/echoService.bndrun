@@ -17,11 +17,11 @@
 	org.apache.felix.gogo.shell;version='[0.10.0,0.10.1)',\
 	org.apache.felix.log;version='[1.0.1,1.0.2)',\
 	org.apache.felix.metatype;version='[1.0.6,1.0.7)',\
-	org.inaetics.wiring.admin;version=latest,\
 	org.inaetics.wiring.admin.http;version=latest,\
 	org.inaetics.wiring.demo.echoService;version=latest,\
 	org.inaetics.wiring.discovery.etcd;version=latest,\
-	org.inaetics.wiring.nodeEndpoint;version=latest
+	org.inaetics.wiring.endpoint;version=latest,\
+	org.inaetics.wiring.wiring;version=latest
 
 
 -runproperties:  \

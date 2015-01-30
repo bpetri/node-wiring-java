@@ -5,16 +5,16 @@ import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.inaetics.wiring.AbstractComponentDelegate;
-import org.inaetics.wiring.admin.WiringAdminListener;
-import org.inaetics.wiring.admin.WiringConstants;
-import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
+import org.inaetics.wiring.NodeEndpointDescription;
+import org.inaetics.wiring.base.AbstractComponentDelegate;
+import org.inaetics.wiring.endpoint.WiringEndpointListener;
+import org.inaetics.wiring.endpoint.WiringConstants;
 import org.osgi.framework.ServiceReference;
 
 public class WiringAdminListenerHandler extends AbstractComponentDelegate {
 
-	private final Map<WiringAdminListener, NodeEndpointDescription> m_wiringAdminListeners =
-			new ConcurrentHashMap<WiringAdminListener, NodeEndpointDescription>();
+	private final Map<WiringEndpointListener, NodeEndpointDescription> m_wiringAdminListeners =
+			new ConcurrentHashMap<WiringEndpointListener, NodeEndpointDescription>();
 
     private final WiringAdminFactory m_manager;
     private final HttpAdminConfiguration m_configuration;
@@ -28,13 +28,13 @@ public class WiringAdminListenerHandler extends AbstractComponentDelegate {
 	}
 	
 	// Dependency Manager callback method
-	protected final void wiringAdminListenerAdded(ServiceReference<?> reference, WiringAdminListener listener) {
+	protected final void wiringAdminListenerAdded(ServiceReference<?> reference, WiringEndpointListener listener) {
 
-		logDebug("Adding WiringAdminListener %s", reference);
+		logDebug("Adding WiringEndpointListener %s", reference);
 
 		String path = getPath(reference);
 		if (path == null) {
-			logError("Adding WiringAdminListener failed, no path property found %s", reference);
+			logError("Adding WiringEndpointListener failed, no path property found %s", reference);
 			return;
 		}
 		
@@ -58,14 +58,14 @@ public class WiringAdminListenerHandler extends AbstractComponentDelegate {
 
 		m_wiringAdminListeners.put(listener, endpoint);
 
-		logDebug("WiringAdminListener added %s", reference);
+		logDebug("WiringEndpointListener added %s", reference);
 
 	}
 
 	// Dependency Manager callback method
-	protected final void wiringAdminListenerRemoved(ServiceReference<?> reference, WiringAdminListener listener) {
+	protected final void wiringAdminListenerRemoved(ServiceReference<?> reference, WiringEndpointListener listener) {
 		
-		logDebug("Removing WiringAdminListener %s", reference);
+		logDebug("Removing WiringEndpointListener %s", reference);
 
 		// remove http handler
 		NodeEndpointDescription endpoint = m_wiringAdminListeners.get(listener);
@@ -76,7 +76,7 @@ public class WiringAdminListenerHandler extends AbstractComponentDelegate {
 
 		m_wiringAdminListeners.remove(listener);
 		
-		logDebug("WiringAdminListener removed %s", reference);
+		logDebug("WiringEndpointListener removed %s", reference);
 	}
 
 	private String getPath(ServiceReference<?> reference) {

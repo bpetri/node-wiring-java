@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.inaetics.wiring;
+package org.inaetics.wiring.base;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,9 +23,9 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
-import org.inaetics.wiring.nodeEndpoint.NodeEndpointEvent;
-import org.inaetics.wiring.nodeEndpoint.NodeEndpointEventListener;
+import org.inaetics.wiring.NodeEndpointDescription;
+import org.inaetics.wiring.NodeEndpointEvent;
+import org.inaetics.wiring.NodeEndpointEventListener;
 import org.osgi.framework.ServiceReference;
 
 /**

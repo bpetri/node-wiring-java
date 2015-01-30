@@ -38,8 +38,8 @@ import mousio.etcd4j.responses.EtcdKeyAction;
 import mousio.etcd4j.responses.EtcdKeysResponse;
 import mousio.etcd4j.responses.EtcdKeysResponse.EtcdNode;
 
+import org.inaetics.wiring.NodeEndpointDescription;
 import org.inaetics.wiring.discovery.AbstractDiscovery;
-import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
 
 /**
  * Etcd implementation of service node based discovery. This type of discovery discovers HTTP nodes

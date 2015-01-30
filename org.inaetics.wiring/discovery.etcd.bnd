@@ -3,16 +3,16 @@ Bundle-Name: Ineatics Wiring - Discovery (Etcd)
 Bundle-Version: 0.1.0
 
 Private-Package:  \
-	org.inaetics.wiring,\
+	org.inaetics.wiring.base,\
 	org.inaetics.wiring.discovery,\
 	org.inaetics.wiring.discovery.etcd,\
 	com.ning.compress.*,\
 	mousio.etcd4j.*,\
-    mousio.client.*,\
-    io.netty.*,\
-    org.slf4j.*,\
-    com.fasterxml.jackson.core.*,\
-    org.apache.commons.lang3.*
+	mousio.client.*,\
+	io.netty.*,\
+	org.slf4j.*,\
+	com.fasterxml.jackson.core.*,\
+	org.apache.commons.lang3.*
 
 Import-Package:  \
     !com.google.protobuf,\

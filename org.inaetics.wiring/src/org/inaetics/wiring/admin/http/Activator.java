@@ -15,8 +15,6 @@
  */
 package org.inaetics.wiring.admin.http;
 
-import static org.inaetics.wiring.ServiceUtil.getConfigIntValue;
-import static org.inaetics.wiring.ServiceUtil.getConfigStringValue;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.CONNECT_TIMEOUT_CONFIG_KEY;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.NODE_CONFIG_KEY;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.PATH_CONFIG_KEY;
@@ -24,6 +22,8 @@ import static org.inaetics.wiring.admin.http.HttpAdminConstants.PROTOCOL;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.READ_TIMEOUT_CONFIG_KEY;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.SERVICE_PID;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.ZONE_CONFIG_KEY;
+import static org.inaetics.wiring.base.ServiceUtil.getConfigIntValue;
+import static org.inaetics.wiring.base.ServiceUtil.getConfigStringValue;
 
 import java.net.URL;
 import java.util.Dictionary;
@@ -32,9 +32,9 @@ import java.util.Hashtable;
 import org.apache.felix.dm.Component;
 import org.apache.felix.dm.DependencyActivatorBase;
 import org.apache.felix.dm.DependencyManager;
-import org.inaetics.wiring.admin.WiringAdmin;
-import org.inaetics.wiring.admin.WiringAdminListener;
-import org.inaetics.wiring.nodeEndpoint.NodeEndpointEventListener;
+import org.inaetics.wiring.NodeEndpointEventListener;
+import org.inaetics.wiring.endpoint.WiringEndpoint;
+import org.inaetics.wiring.endpoint.WiringEndpointListener;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.service.cm.ConfigurationException;
@@ -178,7 +178,7 @@ public final class Activator extends DependencyActivatorBase implements ManagedS
 								"eventListenerRemoved")
 						.setRequired(false))
 				.add(createServiceDependency()
-						.setService(WiringAdminListener.class)
+						.setService(WiringEndpointListener.class)
 						.setCallbacks(factory.getWiringAdminListenerHandler(),
 								"wiringAdminListenerAdded",
 								"wiringAdminListenerRemoved")
@@ -188,7 +188,7 @@ public final class Activator extends DependencyActivatorBase implements ManagedS
 		m_dependencyManager.add(listenerComponent);
 
 		Component adminComponent = createComponent()
-				.setInterface(WiringAdmin.class.getName(), null)
+				.setInterface(WiringEndpoint.class.getName(), null)
 				.setImplementation(factory);
 
 		m_adminComponent = adminComponent;

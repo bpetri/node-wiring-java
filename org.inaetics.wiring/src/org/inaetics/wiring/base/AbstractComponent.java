@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.inaetics.wiring;
+package org.inaetics.wiring.base;
 
-import static org.inaetics.wiring.Constants.CONSOLE_PROP_PRE;
-import static org.inaetics.wiring.Constants.LOGGING_PROP_PRE;
-import static org.inaetics.wiring.ServiceUtil.getFrameworkUUID;
+import static org.inaetics.wiring.base.Constants.CONSOLE_PROP_PRE;
+import static org.inaetics.wiring.base.Constants.LOGGING_PROP_PRE;
+import static org.inaetics.wiring.base.ServiceUtil.getFrameworkUUID;
 
 import java.lang.reflect.Array;
 

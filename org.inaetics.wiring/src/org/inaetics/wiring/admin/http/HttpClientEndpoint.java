@@ -16,7 +16,7 @@
 package org.inaetics.wiring.admin.http;
 
 import static java.net.HttpURLConnection.HTTP_OK;
-import static org.inaetics.wiring.IOUtil.closeSilently;
+import static org.inaetics.wiring.base.IOUtil.closeSilently;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +28,7 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.inaetics.wiring.nodeEndpoint.NodeEndpointDescription;
+import org.inaetics.wiring.NodeEndpointDescription;
 import org.osgi.framework.ServiceException;
 
 /**
