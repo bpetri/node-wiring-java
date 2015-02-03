@@ -32,9 +32,7 @@ import java.util.Hashtable;
 import org.apache.felix.dm.Component;
 import org.apache.felix.dm.DependencyActivatorBase;
 import org.apache.felix.dm.DependencyManager;
-import org.inaetics.wiring.NodeEndpointEventListener;
-import org.inaetics.wiring.endpoint.WiringEndpoint;
-import org.inaetics.wiring.endpoint.WiringEndpointListener;
+import org.inaetics.wiring.WiringAdmin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.service.cm.ConfigurationException;
@@ -43,7 +41,7 @@ import org.osgi.service.http.HttpService;
 import org.osgi.service.log.LogService;
 
 /**
- * Activator and configuration manager for the Amdatu HTTP Remote Service Admin service implementation.
+ * Activator and configuration manager for the Amdatu HTTP Wiring Admin service implementation.
  * <p>
  * Configuration can be provided through cm as well as system properties. The former take precedence and
  * in addition some fallbacks and defaults are provided. See {@link HttpAdminConstants} for supported
@@ -165,34 +163,15 @@ public final class Activator extends DependencyActivatorBase implements ManagedS
         properties.put(HttpAdminConstants.ADMIN_TYPE, PROTOCOL);
 
 		Component listenerComponent = createComponent()
-				.setInterface(NodeEndpointEventListener.class.getName(), properties)
+				.setInterface(WiringAdmin.class.getName(), properties)
 				.setImplementation(factory)
 				.add(createServiceDependency().setService(HttpService.class)
 						.setRequired(true))
 				.add(createServiceDependency().setService(LogService.class)
-						.setRequired(false))
-				.add(createServiceDependency()
-						.setService(NodeEndpointEventListener.class)
-						.setCallbacks(factory,
-								"eventListenerAdded",
-								"eventListenerRemoved")
-						.setRequired(false))
-				.add(createServiceDependency()
-						.setService(WiringEndpointListener.class)
-						.setCallbacks(factory.getWiringAdminListenerHandler(),
-								"wiringAdminListenerAdded",
-								"wiringAdminListenerRemoved")
 						.setRequired(false));
-
 		m_listenerComponent = listenerComponent;
 		m_dependencyManager.add(listenerComponent);
 
-		Component adminComponent = createComponent()
-				.setInterface(WiringEndpoint.class.getName(), null)
-				.setImplementation(factory);
-
-		m_adminComponent = adminComponent;
-		m_dependencyManager.add(adminComponent);
 	}
 
     private void unregisterFactoryService() {

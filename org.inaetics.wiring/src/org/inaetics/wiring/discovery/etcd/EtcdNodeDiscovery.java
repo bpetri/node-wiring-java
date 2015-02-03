@@ -42,8 +42,7 @@ import org.inaetics.wiring.NodeEndpointDescription;
 import org.inaetics.wiring.discovery.AbstractDiscovery;
 
 /**
- * Etcd implementation of service node based discovery. This type of discovery discovers HTTP nodes
- * that provide published services based on the {@link NodeEndpointDescription} extender format.
+ * Etcd implementation of service node based discovery.
  * 
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */
@@ -71,7 +70,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     private final ReentrantReadWriteLock m_lock = new ReentrantReadWriteLock();
     
     public EtcdNodeDiscovery(EtcdDiscoveryConfiguration configuration) {
-        super(DISCOVERY_TYPE);
+        super(DISCOVERY_TYPE, configuration);
         m_configuration = configuration;
     }
 
@@ -200,7 +199,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 	                                		NodeEndpointDescription nodeEndpointDescription = new NodeEndpointDescription();
 	                                		nodeEndpointDescription.setZone(zone);
 	                                		nodeEndpointDescription.setNode(node);
-	                                		nodeEndpointDescription.setPath(path);
+	                                		nodeEndpointDescription.setServiceId(path);
 	                                		nodeEndpointDescription.setProtocol(protocol);
 	                                		nodeEndpointDescription.setUrl(parseEndpoint(url));
 	                                		
@@ -280,7 +279,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     	
     	// path
     	String path = getNextPart(all); 
-    	endpoint.setPath(path);
+    	endpoint.setServiceId(path);
     	all = all.substring(path.length() + 1);
     	
     	// protocol
@@ -376,7 +375,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     }
 
     private String getPathPath(NodeEndpointDescription endpoint) {
-    	return getNodePath(endpoint) + endpoint.getPath() + "/";
+    	return getNodePath(endpoint) + endpoint.getServiceId() + "/";
     }
 
     private String getProtocolPath(NodeEndpointDescription endpoint) {

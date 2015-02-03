@@ -15,16 +15,28 @@
  */
 package org.inaetics.wiring.admin.http;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.inaetics.wiring.ExportRegistration;
+import org.inaetics.wiring.ImportRegistration;
+import org.inaetics.wiring.NodeEndpointDescription;
+import org.inaetics.wiring.WiringAdmin;
 import org.inaetics.wiring.base.AbstractComponentDelegate;
-import org.inaetics.wiring.endpoint.Message;
-import org.inaetics.wiring.endpoint.WiringEndpoint;
+import org.inaetics.wiring.endpoint.WiringEndpointListener;
 
 /**
- * Remote Service Admin instance implementation.
+ * Wiring Admin instance implementation.
  * 
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */
-public final class WiringAdminImpl extends AbstractComponentDelegate implements WiringEndpoint {
+public final class WiringAdminImpl extends AbstractComponentDelegate implements WiringAdmin {
+
+    private final Set<ExportedEndpointImpl> m_exportedEndpoints =
+        new HashSet<ExportedEndpointImpl>();
+
+    private final Set<ImportedEndpointImpl> m_importedEndpoints =
+        new HashSet<ImportedEndpointImpl>();
 
     private final WiringAdminFactory m_manager;
     private final HttpAdminConfiguration m_configuration;
@@ -35,20 +47,36 @@ public final class WiringAdminImpl extends AbstractComponentDelegate implements 
         m_configuration = configuration;
     }
 
-	@Override
-	public void sendMessage(Message message) throws Throwable {
+    @Override
+    protected void startComponentDelegate() throws Exception {
+    }
 
-		FullMessage fullMessage = new FullMessage();
-		fullMessage.setLocalZone(m_configuration.getZone());
-		fullMessage.setLocalNode(m_configuration.getNode());
-		fullMessage.setLocalPath(message.getLocalPath());
-		fullMessage.setRemoteZone(message.getRemoteZone());
-		fullMessage.setRemoteNode(message.getRemoteNode());
-		fullMessage.setRemotePath(message.getRemotePath());
-		fullMessage.setMessage(message.getMessage());
-		fullMessage.setProperties(message.getProperties());
-		
-		m_manager.getClientEndpointFactory().sendMessage(fullMessage);
+    @Override
+    protected void stopComponentDelegate() throws Exception {
+
+    	for (ExportedEndpointImpl exportedEndpointImpl : m_exportedEndpoints) {
+			exportedEndpointImpl.close();
+		}
+    	for (ImportedEndpointImpl importedEndpointImpl : m_importedEndpoints) {
+			importedEndpointImpl.close();
+		}
+    	m_exportedEndpoints.clear();
+    	m_importedEndpoints.clear();
+    	
+    }
+
+	@Override
+	public ExportRegistration exportEndpoint(WiringEndpointListener listener, String serviceId) {
+		ExportedEndpointImpl endpointImpl = new ExportedEndpointImpl(m_manager.getServerEndpointHandler(), listener, serviceId, m_configuration);
+		m_exportedEndpoints.add(endpointImpl);
+		return endpointImpl;
+	}
+
+	@Override
+	public ImportRegistration importEndpoint(NodeEndpointDescription endpoint) {
+		ImportedEndpointImpl endpointImpl = new ImportedEndpointImpl(m_manager.getClientEndpointFactory(), endpoint, m_configuration);
+		m_importedEndpoints.add(endpointImpl);
+		return endpointImpl;
 	}
 
 }

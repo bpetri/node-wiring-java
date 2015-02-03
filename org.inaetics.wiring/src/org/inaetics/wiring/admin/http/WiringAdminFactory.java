@@ -17,30 +17,25 @@ package org.inaetics.wiring.admin.http;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.inaetics.wiring.NodeEndpointEvent;
-import org.inaetics.wiring.NodeEndpointEventListener;
-import org.inaetics.wiring.base.AbstractNodePublishingComponent;
-import org.inaetics.wiring.endpoint.WiringEndpoint;
+import org.inaetics.wiring.WiringAdmin;
+import org.inaetics.wiring.base.AbstractComponent;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceFactory;
-import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.http.HttpService;
 
 /**
- * Factory for the Amdatu Remote Service Admin service implementation.
+ * Factory for the Wiring Admin service implementation.
  * 
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */
-public final class WiringAdminFactory extends AbstractNodePublishingComponent implements ServiceFactory<Object>, NodeEndpointEventListener {
+public final class WiringAdminFactory extends AbstractComponent implements ServiceFactory<WiringAdmin> {
 
     private final ConcurrentHashMap<Bundle, WiringAdminImpl> m_instances =
         new ConcurrentHashMap<Bundle, WiringAdminImpl>();
 
     private final HttpAdminConfiguration m_configuration;
     
-    private final NodeEndpointEventHandler m_endpointEventHandler;
     private final WiringAdminListenerHandler m_wiringAdminListenerhandler;
     
     private final HttpServerEndpointHandler m_serverEndpointHandler;
@@ -55,7 +50,6 @@ public final class WiringAdminFactory extends AbstractNodePublishingComponent im
         m_configuration = configuration;
         m_serverEndpointHandler = new HttpServerEndpointHandler(this, m_configuration);
         m_clientEndpointFactory = new HttpClientEndpointFactory(this, m_configuration);
-        m_endpointEventHandler = new NodeEndpointEventHandler(this, m_configuration, m_clientEndpointFactory);
         m_wiringAdminListenerhandler = new WiringAdminListenerHandler(this, m_configuration, m_serverEndpointHandler);
     }
 
@@ -69,7 +63,6 @@ public final class WiringAdminFactory extends AbstractNodePublishingComponent im
     	
         m_serverEndpointHandler.start();
         m_clientEndpointFactory.start();
-        m_endpointEventHandler.start();
         m_wiringAdminListenerhandler.start();
     }
 
@@ -81,43 +74,30 @@ public final class WiringAdminFactory extends AbstractNodePublishingComponent im
     	
         m_serverEndpointHandler.stop();
         m_clientEndpointFactory.stop();
-        m_endpointEventHandler.stop();
         m_wiringAdminListenerhandler.stop();
 
         super.stopComponent();
     }
 
     @Override
-    public Object getService(Bundle bundle, ServiceRegistration<Object> registration) {
+    public WiringAdmin getService(Bundle bundle, ServiceRegistration<WiringAdmin> registration) {
 
-    	ServiceReference<?> reference = registration.getReference();
-    	String[] objectClassProperty = (String[]) reference.getProperty(Constants.OBJECTCLASS);
-    	String objectClass = objectClassProperty[0];
-    	
-    	if (objectClass.equals(NodeEndpointEventListener.class.getName())) {
-    		return this;
-    	}
-    	
-    	if (objectClass.equals(WiringEndpoint.class.getName())) {
-	    	WiringAdminImpl instance = new WiringAdminImpl(this, m_configuration);
-	        try {
-	            instance.start();
-	            WiringAdminImpl previous = m_instances.put(bundle, instance);
-	            assert previous == null; // framework should guard against this
-	            return instance;
-	        }
-	        catch (Exception e) {
-	            logError("Exception while instantiating admin instance!", e);
-	            return null;
-	        }
-    	}
-    	
-    	return null;
+        WiringAdminImpl instance = new WiringAdminImpl(this, m_configuration);
+        try {
+            instance.start();
+            WiringAdminImpl previous = m_instances.put(bundle, instance);
+            assert previous == null; // framework should guard against this
+            return instance;
+        }
+        catch (Exception e) {
+            logError("Exception while instantiating admin instance!", e);
+            return null;
+        }
     }
 
     @Override
-    public void ungetService(Bundle bundle, ServiceRegistration<Object> registration,
-        Object service) {
+    public void ungetService(Bundle bundle, ServiceRegistration<WiringAdmin> registration,
+    		WiringAdmin service) {
 
         WiringAdminImpl instance = m_instances.remove(bundle);
         try {
@@ -138,19 +118,8 @@ public final class WiringAdminFactory extends AbstractNodePublishingComponent im
     	return m_clientEndpointFactory;
     }
 
-    NodeEndpointEventHandler getNodeEndpointEventHandler() {
-    	return m_endpointEventHandler;
-    }
-    
     WiringAdminListenerHandler getWiringAdminListenerHandler() {
     	return m_wiringAdminListenerhandler;
     }
-    
-	@Override
-	public void nodeChanged(NodeEndpointEvent event) {
-		getNodeEndpointEventHandler().nodeChanged(event);
-	}
-	
-	
 
 }

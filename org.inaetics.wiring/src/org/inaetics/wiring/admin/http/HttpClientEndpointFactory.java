@@ -20,10 +20,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.inaetics.wiring.NodeEndpointDescription;
 import org.inaetics.wiring.base.AbstractComponentDelegate;
-import org.osgi.framework.ServiceFactory;
 
 /**
- * Provides a {@link ServiceFactory} that creates a real {@link HttpClientEndpoint} for each bundle that is getting the service.
+ * Provides a factory that creates a {@link HttpClientEndpoint} for each bundle that is getting the endpoint.
  * 
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */
@@ -43,13 +42,14 @@ public class HttpClientEndpointFactory extends AbstractComponentDelegate impleme
         m_configuration = configuration;
     }
 
-    public void addEndpoint(NodeEndpointDescription endpoint) {
+    public WiringEndpointImpl addEndpoint(NodeEndpointDescription endpoint) {
     	HttpClientEndpoint client = m_clients.get(endpoint);
     	if (client == null) {
     		client = new HttpClientEndpoint(endpoint, m_configuration);
     		m_clients.put(endpoint, client);
     		client.setProblemListener(this);
     	}
+		return new WiringEndpointImpl(this, m_configuration);
     }
     
     public void removeEndpoint(NodeEndpointDescription endpoint) {
@@ -58,7 +58,7 @@ public class HttpClientEndpointFactory extends AbstractComponentDelegate impleme
 
     public String sendMessage(FullMessage message) throws Throwable {
     	for (NodeEndpointDescription endpoint : m_clients.keySet()) {
-    		if (endpoint.getPath().equals(message.getRemotePath())
+    		if (endpoint.getServiceId().equals(message.getRemotePath())
     				&& endpoint.getNode().equals(message.getRemoteNode())
     				&& endpoint.getZone().equals(message.getRemoteZone())) {
     			

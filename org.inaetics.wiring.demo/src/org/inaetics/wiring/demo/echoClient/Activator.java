@@ -22,14 +22,13 @@ public class Activator extends DependencyActivatorBase {
 			throws Exception {
 
 		Dictionary<String, Object> properties = new Hashtable<String, Object>();
-		properties.put(WiringConstants.PROPERTY_PATH, "echoClient");
+		properties.put(WiringConstants.PROPERTY_SERVICE_ID, "echoClient");
 		properties.put(CommandProcessor.COMMAND_SCOPE, "echo");
-		properties.put(CommandProcessor.COMMAND_FUNCTION, "sendMessage");
+		properties.put(CommandProcessor.COMMAND_FUNCTION, new String[]{"sendMessage", "tm"});
 		
 		m_component = createComponent()
 			.setInterface(WiringEndpointListener.class.getName(), properties)
 			.setImplementation(EchoClient.class)
-			.add(createServiceDependency().setService(WiringEndpoint.class).setRequired(true))
 			.add(createServiceDependency().setService(LogService.class).setRequired(false));
 		
 		manager.add(m_component);

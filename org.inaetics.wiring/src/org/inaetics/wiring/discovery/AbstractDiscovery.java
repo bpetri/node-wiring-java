@@ -19,6 +19,7 @@ import org.inaetics.wiring.NodeEndpointDescription;
 import org.inaetics.wiring.NodeEndpointEvent;
 import org.inaetics.wiring.NodeEndpointEventListener;
 import org.inaetics.wiring.base.AbstractNodePublishingComponent;
+import org.inaetics.wiring.discovery.etcd.EtcdDiscoveryConfiguration;
 
 /**
  * Base class for a Discovery Service that handles node registration as well as listener tracking
@@ -31,8 +32,11 @@ import org.inaetics.wiring.base.AbstractNodePublishingComponent;
  */
 public abstract class AbstractDiscovery extends AbstractNodePublishingComponent implements NodeEndpointEventListener {
 
-    public AbstractDiscovery(String name) {
+    private final EtcdDiscoveryConfiguration m_configuration;
+
+	public AbstractDiscovery(String name, EtcdDiscoveryConfiguration configuration) {
         super("discovery", name);
+        m_configuration = configuration;
     }
 
     @Override
@@ -82,7 +86,11 @@ public abstract class AbstractDiscovery extends AbstractNodePublishingComponent 
      */
     protected final void addDiscoveredNode(final NodeEndpointDescription node) {
 
-        executeTask(new Runnable() {
+    	if (isLocalEndpoint(node)) {
+    		return;
+    	}
+
+    	executeTask(new Runnable() {
 
             @Override
             public void run() {
@@ -100,7 +108,11 @@ public abstract class AbstractDiscovery extends AbstractNodePublishingComponent 
      */
     protected final void removeDiscoveredNode(final NodeEndpointDescription node) {
 
-        executeTask(new Runnable() {
+    	if (isLocalEndpoint(node)) {
+    		return;
+    	}
+
+    	executeTask(new Runnable() {
 
             @Override
             public void run() {
@@ -110,6 +122,11 @@ public abstract class AbstractDiscovery extends AbstractNodePublishingComponent 
         });
     }
 
+    private boolean isLocalEndpoint(NodeEndpointDescription endpointDescription) {
+    	return endpointDescription.getZone().equals(m_configuration.getZone())
+    			&& endpointDescription.getNode().equals(m_configuration.getNode());
+    }
+    
     /**
      * Modifies a previously discovered remote service endPoint and invoke relevant listeners. Concrete
      * implementations must call this method for every applicable remote registration that disappears.

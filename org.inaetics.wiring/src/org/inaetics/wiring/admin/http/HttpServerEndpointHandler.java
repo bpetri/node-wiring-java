@@ -37,7 +37,7 @@ import org.inaetics.wiring.base.AbstractComponentDelegate;
 import org.inaetics.wiring.endpoint.WiringEndpointListener;
 
 /**
- * RSA component that handles all server endpoints.
+ * Wiring component that handles all server endpoints.
  * 
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */
@@ -120,7 +120,7 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
         m_lock.readLock().lock();
         try {
         	for (NodeEndpointDescription endpoint : m_handlers.keySet()) {
-        		if (endpoint.getPath().equals(path)) {
+        		if (endpoint.getServiceId().equals(path)) {
         			return m_handlers.get(endpoint);
         		}
         	}
@@ -160,7 +160,7 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
         m_lock.readLock().lock();
         try {
             for (NodeEndpointDescription endpoint : m_handlers.keySet()) {
-                gen.writeString(endpoint.getPath());
+                gen.writeString(endpoint.getServiceId());
             }
         }
         finally {
@@ -239,6 +239,7 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
             HttpServerEndpoint handler = getHandler(endpointId);
             if (handler != null) {
                 try {
+                	// TODO what can we reply?
 //                    handler.listMethodSignatures(req, resp);
                 }
                 catch (Exception e) {

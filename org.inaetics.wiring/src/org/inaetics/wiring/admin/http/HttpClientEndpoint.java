@@ -21,7 +21,6 @@ import static org.inaetics.wiring.base.IOUtil.closeSilently;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationHandler;
 import java.net.HttpURLConnection;
 
 import org.codehaus.jackson.JsonFactory;
@@ -32,7 +31,7 @@ import org.inaetics.wiring.NodeEndpointDescription;
 import org.osgi.framework.ServiceException;
 
 /**
- * Implementation of an {@link InvocationHandler} that represents a remoted service for one or more service interfaces.
+ * Implementation of an http client that can send messages to remote wiring endpoints
  *
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */

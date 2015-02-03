@@ -1,14 +1,11 @@
 package org.inaetics.wiring;
 
 /**
- * An Node Event.
+ * An Node Endpoint Event.
  * <p/>
  * 
  * {@code NodeEndpointEvent} objects are delivered to all registered
- * {@link NodeEndpointEventListener} services where the {@link NodeEndpointDescription}
- * properties match one of the filters specified in the
- * {@link NodeEndpointEventListener#ENDPOINT_LISTENER_SCOPE} registration properties
- * of the Node Event Listener.
+ * {@link NodeEndpointEventListener} services.
  * <p/>
  * 
  * A type code is used to identify the type of event. The following event types
@@ -16,7 +13,6 @@ package org.inaetics.wiring;
  * <ul>
  * <li>{@link #ADDED}</li>
  * <li>{@link #REMOVED}</li>
- * <li>{@link #MODIFIED}</li>
  * </ul>
  * Additional event types may be defined in the future.
  * <p/>
@@ -83,7 +79,6 @@ public class NodeEndpointEvent {
 	 * <ul>
 	 * <li>{@link #ADDED}</li>
 	 * <li>{@link #REMOVED}</li>
-	 * <li>{@link #MODIFIED}</li>
 	 * </ul>
 	 * 
 	 * @return The type of this event.

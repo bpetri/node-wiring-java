@@ -29,8 +29,8 @@ import org.inaetics.wiring.NodeEndpointEventListener;
 import org.osgi.framework.ServiceReference;
 
 /**
- * Base class for service components that wish to inform listeners about Node Description
- * events based on their declared scope.<p>
+ * Base class for service components that wish to inform listeners about Node Endpoint Description
+ * events.<p>
  * 
  * This implementation tracks both Node Listener and Node Event Listener registrations
  * and synchronizes all events/calls through an internal queue. This provides a simple and safe

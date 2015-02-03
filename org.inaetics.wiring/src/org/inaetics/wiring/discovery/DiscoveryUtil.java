@@ -27,7 +27,6 @@ import org.osgi.framework.BundleContext;
  * 
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */
-@SuppressWarnings("deprecation")
 public final class DiscoveryUtil {
 
     public static Properties createNodeListenerServiceProperties(BundleContext context, String discoveryType) {

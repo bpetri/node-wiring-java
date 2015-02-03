@@ -34,7 +34,7 @@ import org.inaetics.wiring.base.IOUtil;
 import org.inaetics.wiring.endpoint.WiringEndpointListener;
 
 /**
- * Servlet that represents a remoted local service.
+ * Servlet that represents a local wiring endpoint.
  *
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */
