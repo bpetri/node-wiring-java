@@ -32,8 +32,7 @@ import org.osgi.framework.ServiceReference;
  * Base class for service components that wish to inform listeners about Node Endpoint Description
  * events.<p>
  * 
- * This implementation tracks both Node Listener and Node Event Listener registrations
- * and synchronizes all events/calls through an internal queue. This provides a simple and safe
+ * This implementation synchronizes all events/calls through an internal queue. This provides a simple and safe
  * programming model for concrete implementations which may also leverage the the queue for ordered
  * asynchronous execution by calling {@link #executeTask(Runnable)}.<p>
  * 

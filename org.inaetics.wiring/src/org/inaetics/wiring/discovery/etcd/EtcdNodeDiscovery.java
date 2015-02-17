@@ -135,10 +135,8 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
             
         	try {
 	            if (response.node.dir && response.node.nodes != null) {
-	                List<NodeEndpointDescription> endpoints = getNodeEndpointDescriptions(response);
-	                for (NodeEndpointDescription endpoint : endpoints) {
-	    				addDiscoveredNode(endpoint);
-	                }
+	                List<NodeEndpointDescription> nodes = getNodeEndpointDescriptions(response);
+	                setDiscoveredNodes(nodes);
 	            }
         	}
         	catch (Exception e) {
@@ -485,15 +483,19 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 
     private class ResponseListener implements IsSimplePromiseResponseHandler<EtcdKeysResponse> {
 
-        @Override
-        public void onResponse(ResponsePromise<EtcdKeysResponse> promise) {
-            try {
-                handleDiscoveryNodeChange(promise.get());
-            }
-            catch (Exception e) {
-                logWarning("Could not get node(s)", e);
-            }
-        }
+		@Override
+		public void onResponse(ResponsePromise<EtcdKeysResponse> promise) {
+			try {
+				if (promise.getException() != null) {
+					logWarning("etcd watch received exception: %s", promise.getException().getMessage());
+					initDiscoveryNodes();
+					return;
+				}
+				handleDiscoveryNodeChange(promise.get());
+			} catch (Exception e) {
+				logWarning("Could not get node(s)", e);
+			}
+		}
     }
 
 	@Override

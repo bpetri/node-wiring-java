@@ -19,7 +19,7 @@ import org.inaetics.wiring.endpoint.Message;
 import org.inaetics.wiring.endpoint.WiringEndpoint;
 
 /**
- * Remote Service Admin instance implementation.
+ * Wiring Endpoint instance implementation.
  * 
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */

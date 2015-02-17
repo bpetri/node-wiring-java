@@ -15,6 +15,12 @@
  */
 package org.inaetics.wiring.discovery;
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.inaetics.wiring.NodeEndpointDescription;
 import org.inaetics.wiring.NodeEndpointEvent;
 import org.inaetics.wiring.NodeEndpointEventListener;
@@ -22,7 +28,7 @@ import org.inaetics.wiring.base.AbstractNodePublishingComponent;
 import org.inaetics.wiring.discovery.etcd.EtcdDiscoveryConfiguration;
 
 /**
- * Base class for a Discovery Service that handles node registration as well as listener tracking
+ * Base class for a Discovery Service that handles node endpoint registration as well as listener tracking
  * and invocation.<br/><br/>
  * 
  * This implementation synchronizes all local and remote events/calls through an internal queue to
@@ -33,6 +39,7 @@ import org.inaetics.wiring.discovery.etcd.EtcdDiscoveryConfiguration;
 public abstract class AbstractDiscovery extends AbstractNodePublishingComponent implements NodeEndpointEventListener {
 
     private final EtcdDiscoveryConfiguration m_configuration;
+    private final ConcurrentHashMap<URL, NodeEndpointDescription> m_nodes = new ConcurrentHashMap<URL, NodeEndpointDescription>();
 
 	public AbstractDiscovery(String name, EtcdDiscoveryConfiguration configuration) {
         super("discovery", name);
@@ -79,6 +86,33 @@ public abstract class AbstractDiscovery extends AbstractNodePublishingComponent 
     }
  
     /**
+     * Set all discovered remote nodes and invoke relevant listeners.
+     * 
+     * @param node The service Node Description
+     */
+    protected final void setDiscoveredNodes(final List<NodeEndpointDescription> newNodes) {
+
+        // first remove old urls
+        List<NodeEndpointDescription> toRemove = new ArrayList<>();
+        for (NodeEndpointDescription oldNode : m_nodes.values()) {
+            if (!newNodes.contains(oldNode)) {
+                toRemove.add(oldNode);
+            }
+        }
+        for (NodeEndpointDescription removedNode : toRemove) {
+        	removeDiscoveredNode(removedNode);
+        }
+        // add missing urls
+        Collection<NodeEndpointDescription> oldNodes = m_nodes.values();
+        for (NodeEndpointDescription newNode : newNodes) {
+            if (!oldNodes.contains(newNode)) {
+                addDiscoveredNode(newNode);
+            }
+        }
+
+    }
+
+    /**
      * Register a newly discovered remote service and invoke relevant listeners. Concrete implementations must
      * call this method for every applicable remote registration they discover.
      * 
@@ -89,6 +123,8 @@ public abstract class AbstractDiscovery extends AbstractNodePublishingComponent 
     	if (isLocalEndpoint(node)) {
     		return;
     	}
+    	
+    	m_nodes.put(node.getUrl(), node);
 
     	executeTask(new Runnable() {
 
@@ -112,6 +148,8 @@ public abstract class AbstractDiscovery extends AbstractNodePublishingComponent 
     		return;
     	}
 
+    	m_nodes.remove(node.getUrl());
+    	
     	executeTask(new Runnable() {
 
             @Override
