@@ -1,3 +1,6 @@
+/**
+ * Licensed under Apache License v2. See LICENSE for more information.
+ */
 package org.inaetics.wiring.admin.http;
 
 import java.net.MalformedURLException;

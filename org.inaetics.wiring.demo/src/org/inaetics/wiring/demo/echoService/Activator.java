@@ -1,3 +1,6 @@
+/**
+ * Licensed under Apache License v2. See LICENSE for more information.
+ */
 package org.inaetics.wiring.demo.echoService;
 
 import java.util.Dictionary;
