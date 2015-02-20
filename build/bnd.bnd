@@ -1,2 +1,0 @@
--nobundles=true
--dependson: org.inaetics.wiring
