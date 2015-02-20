@@ -40,7 +40,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     public static final String DISCOVERY_TYPE = "etcd";
 
     private static final String ENDPOINT_KEY_URL = "url";
-    private static final String ENDPOINT_KEY_METADATA = "metadata";
+//    private static final String ENDPOINT_KEY_METADATA = "metadata";
     private static final String ENDPOINT_KEY_ENDPOINT_COMPLETE = "complete";
     private static final String SEP = "/";
 
@@ -409,16 +409,13 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
         	// put endpoint url
         	m_etcd.put(getProtocolPath(endpoint) + ENDPOINT_KEY_URL, endpoint.getUrl().toString()).send().get();
         	
-        	// put endpoint metadata
-        	m_etcd.put(getProtocolPath(endpoint) + ENDPOINT_KEY_METADATA, "{test : test}").send().get();
-
         	// put marker that everything is written
         	m_etcd.put(getProtocolPath(endpoint) + ENDPOINT_KEY_ENDPOINT_COMPLETE, Boolean.TRUE.toString()).send().get();
         }
         
         private void putDir(String path) throws Exception {
         	EtcdKeyPutRequest putRequest = m_etcd.putDir(path).ttl(ETCD_REGISTRATION_TTL);
-        	// putDir with ttl needs prevExis when already existing
+        	// putDir with ttl needs prevExist when already existing
         	if(dirExists(path)) {
         		putRequest.prevExist(true);
         	}
