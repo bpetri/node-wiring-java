@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.inaetics.wiring.ImportReference;
 import org.inaetics.wiring.ImportRegistration;
-import org.inaetics.wiring.NodeEndpointDescription;
+import org.inaetics.wiring.WiringEndpointDescription;
 import org.inaetics.wiring.endpoint.WiringEndpoint;
 
 /**
@@ -22,7 +22,7 @@ public final class ImportedEndpointImpl implements ImportRegistration, ImportRef
     private final AtomicBoolean m_closed = new AtomicBoolean(false);
     private final HttpAdminConfiguration m_configuration;
 
-    private volatile NodeEndpointDescription m_endpointDescription;
+    private volatile WiringEndpointDescription m_endpointDescription;
     private volatile HttpClientEndpointFactory m_endpointFactory;
     private volatile WiringEndpoint m_endpoint;
 
@@ -36,7 +36,7 @@ public final class ImportedEndpointImpl implements ImportRegistration, ImportRef
      * @param admin the admin instance
      * @param description the description
      */
-    public ImportedEndpointImpl(HttpClientEndpointFactory endpointFactory, NodeEndpointDescription description,
+    public ImportedEndpointImpl(HttpClientEndpointFactory endpointFactory, WiringEndpointDescription description,
         HttpAdminConfiguration configuration) {
 
         m_endpointFactory = endpointFactory;
@@ -85,11 +85,11 @@ public final class ImportedEndpointImpl implements ImportRegistration, ImportRef
     }
 
     @Override
-    public NodeEndpointDescription getEndpointDescription() {
+    public WiringEndpointDescription getEndpointDescription() {
         return getEndpointDescription(false);
     }
 
-    NodeEndpointDescription getEndpointDescription(boolean ignoreClosed) {
+    WiringEndpointDescription getEndpointDescription(boolean ignoreClosed) {
         if (!ignoreClosed && m_closed.get()) {
             return null;
         }

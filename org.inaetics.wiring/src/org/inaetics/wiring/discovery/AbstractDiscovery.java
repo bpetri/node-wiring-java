@@ -9,14 +9,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.inaetics.wiring.NodeEndpointDescription;
-import org.inaetics.wiring.NodeEndpointEvent;
-import org.inaetics.wiring.NodeEndpointEventListener;
-import org.inaetics.wiring.base.AbstractNodePublishingComponent;
+import org.inaetics.wiring.WiringEndpointDescription;
+import org.inaetics.wiring.WiringEndpointEvent;
+import org.inaetics.wiring.WiringEndpointEventListener;
+import org.inaetics.wiring.base.AbstractWiringEndpointPublishingComponent;
 import org.inaetics.wiring.discovery.etcd.EtcdDiscoveryConfiguration;
 
 /**
- * Base class for a Discovery Service that handles node endpoint registration as well as listener tracking
+ * Base class for a Discovery Service that handles wiring endpoint registration as well as listener tracking
  * and invocation.<br/><br/>
  * 
  * This implementation synchronizes all local and remote events/calls through an internal queue to
@@ -24,10 +24,10 @@ import org.inaetics.wiring.discovery.etcd.EtcdDiscoveryConfiguration;
  * 
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */
-public abstract class AbstractDiscovery extends AbstractNodePublishingComponent implements NodeEndpointEventListener {
+public abstract class AbstractDiscovery extends AbstractWiringEndpointPublishingComponent implements WiringEndpointEventListener {
 
     private final EtcdDiscoveryConfiguration m_configuration;
-    private final ConcurrentHashMap<URL, NodeEndpointDescription> m_nodes = new ConcurrentHashMap<URL, NodeEndpointDescription>();
+    private final ConcurrentHashMap<URL, WiringEndpointDescription> m_endpoints = new ConcurrentHashMap<URL, WiringEndpointDescription>();
 
 	public AbstractDiscovery(String name, EtcdDiscoveryConfiguration configuration) {
         super("discovery", name);
@@ -45,26 +45,26 @@ public abstract class AbstractDiscovery extends AbstractNodePublishingComponent 
     }
 
     @Override
-    public void nodeChanged(final NodeEndpointEvent event) {
+    public void endpointChanged(final WiringEndpointEvent event) {
 
         switch (event.getType()) {
-            case NodeEndpointEvent.ADDED:
+            case WiringEndpointEvent.ADDED:
                 executeTask(new Runnable() {
 
                     @Override
                     public void run() {
-                        logInfo("Added local node: %s", event.getEndpoint());
-                        addPublishedNode(event.getEndpoint());
+                        logInfo("Added local endpoint: %s", event.getEndpoint());
+                        addPublishedEndpoint(event.getEndpoint());
                     }
                 });
                 break;
-            case NodeEndpointEvent.REMOVED:
+            case WiringEndpointEvent.REMOVED:
                 executeTask(new Runnable() {
 
                     @Override
                     public void run() {
-                        logInfo("Removed local node: %s", event.getEndpoint());
-                        removePublishedNode(event.getEndpoint());
+                        logInfo("Removed local endpoint: %s", event.getEndpoint());
+                        removePublishedEndpoint(event.getEndpoint());
                     }
                 });
                 break;
@@ -74,110 +74,110 @@ public abstract class AbstractDiscovery extends AbstractNodePublishingComponent 
     }
  
     /**
-     * Set all discovered remote nodes and invoke relevant listeners.
+     * Set all discovered remote endpoints and invoke relevant listeners.
      * 
-     * @param node The service Node Description
+     * @param newEndpoints The Wiring Endpoint Description
      */
-    protected final void setDiscoveredNodes(final List<NodeEndpointDescription> newNodes) {
+    protected final void setDiscoveredEndpoints(final List<WiringEndpointDescription> newEndpoints) {
 
         // first remove old urls
-        List<NodeEndpointDescription> toRemove = new ArrayList<>();
-        for (NodeEndpointDescription oldNode : m_nodes.values()) {
-            if (!newNodes.contains(oldNode)) {
-                toRemove.add(oldNode);
+        List<WiringEndpointDescription> toRemove = new ArrayList<>();
+        for (WiringEndpointDescription oldEndpoint : m_endpoints.values()) {
+            if (!newEndpoints.contains(oldEndpoint)) {
+                toRemove.add(oldEndpoint);
             }
         }
-        for (NodeEndpointDescription removedNode : toRemove) {
-        	removeDiscoveredNode(removedNode);
+        for (WiringEndpointDescription removedEndpoint : toRemove) {
+        	removeDiscoveredEndpoint(removedEndpoint);
         }
         // add missing urls
-        Collection<NodeEndpointDescription> oldNodes = m_nodes.values();
-        for (NodeEndpointDescription newNode : newNodes) {
-            if (!oldNodes.contains(newNode)) {
-                addDiscoveredNode(newNode);
+        Collection<WiringEndpointDescription> oldEndpoints = m_endpoints.values();
+        for (WiringEndpointDescription newEndpoint : newEndpoints) {
+            if (!oldEndpoints.contains(newEndpoint)) {
+                addDiscoveredEndpoint(newEndpoint);
             }
         }
 
     }
 
     /**
-     * Register a newly discovered remote service and invoke relevant listeners. Concrete implementations must
+     * Register a newly discovered remote wiring endpoint and invoke relevant listeners. Concrete implementations must
      * call this method for every applicable remote registration they discover.
      * 
-     * @param node The service Node Description
+     * @param endpoint The service Wiring Endpoint Description
      */
-    protected final void addDiscoveredNode(final NodeEndpointDescription node) {
+    protected final void addDiscoveredEndpoint(final WiringEndpointDescription endpoint) {
 
-    	if (isLocalEndpoint(node)) {
+    	if (isLocalEndpoint(endpoint)) {
     		return;
     	}
     	
-    	m_nodes.put(node.getUrl(), node);
+    	m_endpoints.put(endpoint.getUrl(), endpoint);
 
     	executeTask(new Runnable() {
 
             @Override
             public void run() {
-                logInfo("Adding remote node: %s", node);
-                nodeAdded(node);
+                logInfo("Adding remote endpoint: %s", endpoint);
+                endpointAdded(endpoint);
             }
         });
     }
 
     /**
-     * Unregister a previously discovered remote service endPoint and invoke relevant listeners. Concrete
+     * Unregister a previously discovered remote wiring endpoint and invoke relevant listeners. Concrete
      * implementations must call this method for every applicable remote registration that disappears.
      * 
-     * @param node The service Node Description
+     * @param endpoint The service Wiring Endpoint Description
      */
-    protected final void removeDiscoveredNode(final NodeEndpointDescription node) {
+    protected final void removeDiscoveredEndpoint(final WiringEndpointDescription endpoint) {
 
-    	if (isLocalEndpoint(node)) {
+    	if (isLocalEndpoint(endpoint)) {
     		return;
     	}
 
-    	m_nodes.remove(node.getUrl());
+    	m_endpoints.remove(endpoint.getUrl());
     	
     	executeTask(new Runnable() {
 
             @Override
             public void run() {
-                logInfo("Removed remote node: %s", node);
-                nodeRemoved(node);
+                logInfo("Removed remote endpoint: %s", endpoint);
+                endpointRemoved(endpoint);
             }
         });
     }
 
-    private boolean isLocalEndpoint(NodeEndpointDescription endpointDescription) {
+    private boolean isLocalEndpoint(WiringEndpointDescription endpointDescription) {
     	return endpointDescription.getZone().equals(m_configuration.getZone())
     			&& endpointDescription.getNode().equals(m_configuration.getNode());
     }
     
     /**
-     * Modifies a previously discovered remote service endPoint and invoke relevant listeners. Concrete
+     * Modifies a previously discovered remote wiring endpoint and invoke relevant listeners. Concrete
      * implementations must call this method for every applicable remote registration that disappears.
      * 
-     * @param node The service Node Description
+     * @param endpoint The Wiring Endpoint Description
      */
-    protected final void modifyDiscoveredNode(NodeEndpointDescription node) {
+    protected final void modifyDiscoveredEndpoint(WiringEndpointDescription endpoint) {
 
-        addDiscoveredNode(node);
+        addDiscoveredEndpoint(endpoint);
     }
 
     /**
-     * Called when an exported service is published. The concrete implementation is responsible for registering
+     * Called when an wiring endpoint is published. The concrete implementation is responsible for registering
      * the service in its service registry.
      * 
-     * @param node The service Node Description
+     * @param endpoint The Wiring Endpoint Description
      */
-    protected abstract void addPublishedNode(NodeEndpointDescription node);
+    protected abstract void addPublishedEndpoint(WiringEndpointDescription endpoint);
 
     /**
-     * Called when an exported service is depublished. The concrete implementation is responsible for unregistering
+     * Called when an exported wiring endpoint is depublished. The concrete implementation is responsible for unregistering
      * the service in its service registry.
      * 
-     * @param node The service Node Description
+     * @param endpoint The Wiring Endpoint Description
      */
-    protected abstract void removePublishedNode(NodeEndpointDescription node);
+    protected abstract void removePublishedEndpoint(WiringEndpointDescription endpoint);
 
 }

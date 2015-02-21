@@ -21,5 +21,5 @@ public interface ExportReference {
 	 * @return The Endpoint Description for the local endpoint. Must be
 	 *         {@code null} when the service is no longer exported.
 	 */
-	NodeEndpointDescription getEndpointDescription();
+	WiringEndpointDescription getEndpointDescription();
 }

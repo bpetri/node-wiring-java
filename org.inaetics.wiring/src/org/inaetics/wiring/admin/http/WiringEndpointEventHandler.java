@@ -7,21 +7,21 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.inaetics.wiring.NodeEndpointDescription;
-import org.inaetics.wiring.NodeEndpointEvent;
-import org.inaetics.wiring.NodeEndpointEventListener;
+import org.inaetics.wiring.WiringEndpointDescription;
+import org.inaetics.wiring.WiringEndpointEvent;
+import org.inaetics.wiring.WiringEndpointEventListener;
 import org.inaetics.wiring.base.AbstractComponentDelegate;
 
-public class NodeEndpointEventHandler extends AbstractComponentDelegate implements NodeEndpointEventListener {
+public class WiringEndpointEventHandler extends AbstractComponentDelegate implements WiringEndpointEventListener {
 
-    private final Set<NodeEndpointDescription> m_importedEndpoints =
-    		Collections.newSetFromMap(new ConcurrentHashMap<NodeEndpointDescription, Boolean>());
+    private final Set<WiringEndpointDescription> m_importedEndpoints =
+    		Collections.newSetFromMap(new ConcurrentHashMap<WiringEndpointDescription, Boolean>());
 	
     private final WiringAdminFactory m_manager;
     private final HttpAdminConfiguration m_configuration;
     private final HttpClientEndpointFactory m_clientFactory;
 
-	public NodeEndpointEventHandler(WiringAdminFactory wiringAdminFactory,
+	public WiringEndpointEventHandler(WiringAdminFactory wiringAdminFactory,
 			HttpAdminConfiguration configuration, HttpClientEndpointFactory clientEndpointFactory) {
 		super (wiringAdminFactory);
 		m_manager = wiringAdminFactory;
@@ -30,22 +30,22 @@ public class NodeEndpointEventHandler extends AbstractComponentDelegate implemen
 	}
 
 	@Override
-	public void nodeChanged(NodeEndpointEvent event) {
+	public void endpointChanged(WiringEndpointEvent event) {
 		int type = event.getType();
 		switch (type) {
-			case NodeEndpointEvent.ADDED:
+			case WiringEndpointEvent.ADDED:
 				endpointAdded(event.getEndpoint()); break;
-			case NodeEndpointEvent.REMOVED:
+			case WiringEndpointEvent.REMOVED:
 				endpointRemoved(event.getEndpoint()); break;
 		}
 	}
 
-	private void endpointAdded(NodeEndpointDescription endpoint) {
+	private void endpointAdded(WiringEndpointDescription endpoint) {
 		m_importedEndpoints.add(endpoint);
 		m_clientFactory.addEndpoint(endpoint);
 	}
 
-	private void endpointRemoved(NodeEndpointDescription endpoint) {
+	private void endpointRemoved(WiringEndpointDescription endpoint) {
 		m_importedEndpoints.remove(endpoint);
 		m_clientFactory.removeEndpoint(endpoint);
 	}

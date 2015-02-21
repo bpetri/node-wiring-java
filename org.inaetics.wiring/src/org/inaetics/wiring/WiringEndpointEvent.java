@@ -4,11 +4,11 @@
 package org.inaetics.wiring;
 
 /**
- * An Node Endpoint Event.
+ * An Wiring Endpoint Event.
  * <p/>
  * 
- * {@code NodeEndpointEvent} objects are delivered to all registered
- * {@link NodeEndpointEventListener} services.
+ * {@code WiringEndpointEvent} objects are delivered to all registered
+ * {@link WiringEndpointEventListener} services.
  * <p/>
  * 
  * A type code is used to identify the type of event. The following event types
@@ -20,18 +20,18 @@ package org.inaetics.wiring;
  * Additional event types may be defined in the future.
  * <p/>
  * 
- * @see NodeEndpointEventListener
+ * @see WiringEndpointEventListener
  * @Immutable
  * @since 1.1
  */
-public class NodeEndpointEvent {
+public class WiringEndpointEvent {
 	/**
 	 * An endpoint has been added.
 	 * <p/>
 	 * 
-	 * This {@code NodeEndpointEvent} type indicates that a new endpoint has been
+	 * This {@code WiringEndpointEvent} type indicates that a new endpoint has been
 	 * added. The endpoint is represented by the associated
-	 * {@link NodeEndpointDescription} object.
+	 * {@link WiringEndpointDescription} object.
 	 */
 	public static final int				ADDED				= 0x00000001;
 
@@ -39,16 +39,16 @@ public class NodeEndpointEvent {
 	 * An endpoint has been removed.
 	 * <p/>
 	 * 
-	 * This {@code NodeEndpointEvent} type indicates that an endpoint has been
+	 * This {@code WiringEndpointEvent} type indicates that an endpoint has been
 	 * removed. The endpoint is represented by the associated
-	 * {@link NodeEndpointDescription} object.
+	 * {@link WiringEndpointDescription} object.
 	 */
 	public static final int				REMOVED				= 0x00000002;
 
 	/**
 	 * Reference to the associated endpoint description.
 	 */
-	private final NodeEndpointDescription	endpoint;
+	private final WiringEndpointDescription	endpoint;
 
 	/**
 	 * Type of the event.
@@ -56,12 +56,12 @@ public class NodeEndpointEvent {
 	private final int					type;
 
 	/**
-	 * Constructs a {@code NodeEndpointEvent} object from the given arguments.
+	 * Constructs a {@code WiringEndpointEvent} object from the given arguments.
 	 * 
 	 * @param type The event type. See {@link #getType()}.
 	 * @param endpoint The endpoint associated with the event.
 	 */
-	public NodeEndpointEvent(int type, NodeEndpointDescription endpoint) {
+	public WiringEndpointEvent(int type, WiringEndpointDescription endpoint) {
 		this.endpoint = endpoint;
 		this.type = type;
 	}
@@ -71,7 +71,7 @@ public class NodeEndpointEvent {
 	 * 
 	 * @return The endpoint associated with the event.
 	 */
-	public NodeEndpointDescription getEndpoint() {
+	public WiringEndpointDescription getEndpoint() {
 		return endpoint;
 	}
 

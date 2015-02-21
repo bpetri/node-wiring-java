@@ -8,7 +8,7 @@ import java.util.Hashtable;
 
 import org.apache.felix.dm.DependencyActivatorBase;
 import org.apache.felix.dm.DependencyManager;
-import org.inaetics.wiring.NodeEndpointEventListener;
+import org.inaetics.wiring.WiringEndpointEventListener;
 import org.inaetics.wiring.WiringAdmin;
 import org.inaetics.wiring.WiringAdminListener;
 import org.inaetics.wiring.endpoint.WiringEndpointListener;
@@ -28,7 +28,7 @@ public class Activator extends DependencyActivatorBase {
     public void init(BundleContext context, DependencyManager manager) throws Exception {
 
         String[] objectClass =
-            new String[] { WiringAdminListener.class.getName(), NodeEndpointEventListener.class.getName(),
+            new String[] { WiringAdminListener.class.getName(), WiringEndpointEventListener.class.getName(),
                 ManagedService.class.getName() };
 
         Dictionary<String, Object> properties = new Hashtable<String, Object>();
@@ -50,7 +50,7 @@ public class Activator extends DependencyActivatorBase {
                     .setCallbacks("endpointListenerAdded", "endpointListenerModified", "endpointListenerRemoved")
                     .setRequired(false))
                 .add(createServiceDependency()
-                    .setService(NodeEndpointEventListener.class)
+                    .setService(WiringEndpointEventListener.class)
                     .setCallbacks("eventListenerAdded", "eventListenerModified", "eventListenerRemoved")
                     .setRequired(false))
             );

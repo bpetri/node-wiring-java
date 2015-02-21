@@ -9,12 +9,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.inaetics.wiring.ExportReference;
 import org.inaetics.wiring.ExportRegistration;
-import org.inaetics.wiring.NodeEndpointDescription;
+import org.inaetics.wiring.WiringEndpointDescription;
 import org.inaetics.wiring.endpoint.WiringEndpointListener;
 
 /**
  * The {@link ExportedEndpointImpl} class represents an active exported endpoint for a
- * unique {@link NodeEndpointDescription}. It manages the server endpoint lifecycle and
+ * unique {@link WiringEndpointDescription}. It manages the server endpoint lifecycle and
  * serves as the {@link ExportRegistration} and {@link ExportReference}.
  * 
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
@@ -25,7 +25,7 @@ public final class ExportedEndpointImpl implements ExportRegistration, ExportRef
     
     private final HttpServerEndpointHandler m_endpointHandler;
 
-    private volatile NodeEndpointDescription m_endpointDescription;
+    private volatile WiringEndpointDescription m_endpointDescription;
     private volatile WiringEndpointListener m_endpoint;
     private volatile Throwable m_exception;
 	private volatile HttpAdminConfiguration m_configuration;
@@ -50,7 +50,7 @@ public final class ExportedEndpointImpl implements ExportRegistration, ExportRef
         try {
 
     		// create new endpoint description
-    		m_endpointDescription = new NodeEndpointDescription();
+    		m_endpointDescription = new WiringEndpointDescription();
     		m_endpointDescription.setZone(m_configuration.getZone());
     		m_endpointDescription.setNode(m_configuration.getNode());
     		m_endpointDescription.setServiceId(serviceId);
@@ -106,11 +106,11 @@ public final class ExportedEndpointImpl implements ExportRegistration, ExportRef
     }
 
     @Override
-    public NodeEndpointDescription getEndpointDescription() {
+    public WiringEndpointDescription getEndpointDescription() {
         return getEndpointDescription(false);
     }
 
-    NodeEndpointDescription getEndpointDescription(boolean ignoreClosed) {
+    WiringEndpointDescription getEndpointDescription(boolean ignoreClosed) {
         if (!ignoreClosed && m_closed.get()) {
             return null;
         }

@@ -21,5 +21,5 @@ public interface WiringAdmin {
 	/**
 	 * Import an Endpoint.
 	 */
-	public ImportRegistration importEndpoint(NodeEndpointDescription endpoint);
+	public ImportRegistration importEndpoint(WiringEndpointDescription endpoint);
 }

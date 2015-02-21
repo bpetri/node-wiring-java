@@ -6,7 +6,7 @@ package org.inaetics.wiring.admin.http;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.inaetics.wiring.NodeEndpointDescription;
+import org.inaetics.wiring.WiringEndpointDescription;
 import org.inaetics.wiring.base.AbstractComponentDelegate;
 
 /**
@@ -16,8 +16,8 @@ import org.inaetics.wiring.base.AbstractComponentDelegate;
  */
 public class HttpClientEndpointFactory extends AbstractComponentDelegate implements ClientEndpointProblemListener {
 
-	private Map<NodeEndpointDescription, HttpClientEndpoint> m_clients =
-			new ConcurrentHashMap<NodeEndpointDescription, HttpClientEndpoint>();
+	private Map<WiringEndpointDescription, HttpClientEndpoint> m_clients =
+			new ConcurrentHashMap<WiringEndpointDescription, HttpClientEndpoint>();
 	
     private ClientEndpointProblemListener m_problemListener;
     private HttpAdminConfiguration m_configuration;
@@ -30,7 +30,7 @@ public class HttpClientEndpointFactory extends AbstractComponentDelegate impleme
         m_configuration = configuration;
     }
 
-    public WiringEndpointImpl addEndpoint(NodeEndpointDescription endpoint) {
+    public WiringEndpointImpl addEndpoint(WiringEndpointDescription endpoint) {
     	HttpClientEndpoint client = m_clients.get(endpoint);
     	if (client == null) {
     		client = new HttpClientEndpoint(endpoint, m_configuration);
@@ -40,12 +40,12 @@ public class HttpClientEndpointFactory extends AbstractComponentDelegate impleme
 		return new WiringEndpointImpl(this, m_configuration);
     }
     
-    public void removeEndpoint(NodeEndpointDescription endpoint) {
+    public void removeEndpoint(WiringEndpointDescription endpoint) {
     	m_clients.remove(endpoint);
     }
 
     public String sendMessage(FullMessage message) throws Throwable {
-    	for (NodeEndpointDescription endpoint : m_clients.keySet()) {
+    	for (WiringEndpointDescription endpoint : m_clients.keySet()) {
     		if (endpoint.getServiceId().equals(message.getRemotePath())
     				&& endpoint.getNode().equals(message.getRemoteNode())
     				&& endpoint.getZone().equals(message.getRemoteZone())) {

@@ -10,7 +10,7 @@ import java.util.Map;
  * @author msluiter
  *
  */
-public class NodeEndpointDescription {
+public class WiringEndpointDescription {
 	
 	private String m_zone;
 	private String m_node;
@@ -18,7 +18,7 @@ public class NodeEndpointDescription {
 	private String m_protocol;
 	private URL m_url;
 	
-	public NodeEndpointDescription() {
+	public WiringEndpointDescription() {
 	}
 	
 	public String getZone() {
@@ -86,7 +86,7 @@ public class NodeEndpointDescription {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		NodeEndpointDescription other = (NodeEndpointDescription) obj;
+		WiringEndpointDescription other = (WiringEndpointDescription) obj;
 		if (m_node == null) {
 			if (other.m_node != null)
 				return false;
@@ -112,7 +112,7 @@ public class NodeEndpointDescription {
 
 	@Override
 	public String toString() {
-		return "NodeEndpointDescription [m_zone=" + m_zone + ", m_node="
+		return "WiringEndpointDescription [m_zone=" + m_zone + ", m_node="
 				+ m_node + ", m_serviceId=" + m_serviceId + ", m_protocol=" + m_protocol
 				+ ", m_url=" + m_url + "]";
 	}

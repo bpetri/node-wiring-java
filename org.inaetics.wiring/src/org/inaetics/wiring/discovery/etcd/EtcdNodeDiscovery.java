@@ -26,7 +26,7 @@ import mousio.etcd4j.responses.EtcdKeyAction;
 import mousio.etcd4j.responses.EtcdKeysResponse;
 import mousio.etcd4j.responses.EtcdKeysResponse.EtcdNode;
 
-import org.inaetics.wiring.NodeEndpointDescription;
+import org.inaetics.wiring.WiringEndpointDescription;
 import org.inaetics.wiring.discovery.AbstractDiscovery;
 
 /**
@@ -36,7 +36,7 @@ import org.inaetics.wiring.discovery.AbstractDiscovery;
  */
 public final class EtcdNodeDiscovery extends AbstractDiscovery {
 
-	public static final String DISCOVERY_NAME = "Amdatu Remote Service Node (Etcd)";
+	public static final String DISCOVERY_NAME = "Amdatu Wiring Node Discovery (Etcd)";
     public static final String DISCOVERY_TYPE = "etcd";
 
     private static final String ENDPOINT_KEY_URL = "url";
@@ -52,9 +52,9 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     private volatile EtcdRegistrationUpdater m_updater;
     private volatile EtcdClient m_etcd;
     
-    private final NodeEndpointDescription m_localNode = new NodeEndpointDescription();
+    private final WiringEndpointDescription m_localEndpoint = new WiringEndpointDescription();
     
-    private final Map<String, NodeEndpointDescription> m_publishedNodeEndpoints = new HashMap<String, NodeEndpointDescription>();
+    private final Map<String, WiringEndpointDescription> m_publishedEndpoints = new HashMap<String, WiringEndpointDescription>();
     private final ReentrantReadWriteLock m_lock = new ReentrantReadWriteLock();
     
     public EtcdNodeDiscovery(EtcdDiscoveryConfiguration configuration) {
@@ -75,10 +75,10 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
         m_updater = new EtcdRegistrationUpdater();
 
         // set local node properties (without enpoints)
-    	m_localNode.setZone(m_configuration.getZone());
-    	m_localNode.setNode(m_configuration.getNode());
+    	m_localEndpoint.setZone(m_configuration.getZone());
+    	m_localEndpoint.setNode(m_configuration.getNode());
 
-        initDiscoveryNodes();
+        discoverEndpoints();
     }
 
     @Override
@@ -104,7 +104,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
         super.stopComponent();
     }
 
-    private void initDiscoveryNodes() throws Exception {
+    private void discoverEndpoints() throws Exception {
         long index = 0l;
         try {
         	
@@ -119,30 +119,30 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
         	
             EtcdKeysResponse response = m_etcd.getDir(rootPath).recursive().send().get();
             index = getEtcdIndex(response);
-            logDebug("Initializing peer nodes at etcd index %s", index);
+            logDebug("discovering endpoints at etcd index %s", index);
             
         	try {
 	            if (response.node.dir && response.node.nodes != null) {
-	                List<NodeEndpointDescription> nodes = getNodeEndpointDescriptions(response);
-	                setDiscoveredNodes(nodes);
+	                List<WiringEndpointDescription> nodes = getWiringEndpointDescriptions(response);
+	                setDiscoveredEndpoints(nodes);
 	            }
         	}
         	catch (Exception e) {
-				logWarning("Failed to add discovery node(s)", e);
+				logWarning("Failed to set discovered endpoint(s)", e);
 			}
             
         }
         catch (EtcdException e) {
-            logError("Could not initialize peer discovery nodes!", e);
+            logError("Could not discovery endpoints!", e);
         }
         finally {
             setDirectoryWatch(index + 1);
         }
     }
 
-    private List<NodeEndpointDescription> getNodeEndpointDescriptions(EtcdKeysResponse response) {
+    private List<WiringEndpointDescription> getWiringEndpointDescriptions(EtcdKeysResponse response) {
     	
-    	List<NodeEndpointDescription> endpoints = new ArrayList<>();
+    	List<WiringEndpointDescription> endpoints = new ArrayList<>();
     	
         // zones
     	for (EtcdNode zoneNode : response.node.nodes) {
@@ -182,14 +182,14 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 	                                	if (complete.equals(Boolean.TRUE.toString())) {
 	                                		logDebug("Adding %s %s %s %s", zone, node, path, protocol);
 	                                		
-	                                		NodeEndpointDescription nodeEndpointDescription = new NodeEndpointDescription();
-	                                		nodeEndpointDescription.setZone(zone);
-	                                		nodeEndpointDescription.setNode(node);
-	                                		nodeEndpointDescription.setServiceId(path);
-	                                		nodeEndpointDescription.setProtocol(protocol);
-	                                		nodeEndpointDescription.setUrl(parseEndpoint(url));
+	                                		WiringEndpointDescription endpointDescription = new WiringEndpointDescription();
+	                                		endpointDescription.setZone(zone);
+	                                		endpointDescription.setNode(node);
+	                                		endpointDescription.setServiceId(path);
+	                                		endpointDescription.setProtocol(protocol);
+	                                		endpointDescription.setUrl(parseEndpoint(url));
 	                                		
-	                                		endpoints.add(nodeEndpointDescription);
+	                                		endpoints.add(endpointDescription);
 	                                	}
                             				
                             		}
@@ -216,42 +216,42 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     	long index = 0l;
         try {
             index = response.node.modifiedIndex;
-            logInfo("Handling peer node change at etcd index %s, action %s, key %s", index, response.action.toString(), response.node.key);
+            logInfo("Handling endpoint change at etcd index %s, action %s, key %s", index, response.action.toString(), response.node.key);
             
             // new node is ready on a set on the "complete" key with value "true"
             if (response.action == EtcdKeyAction.set
             		&& response.node.key.endsWith(SEP + ENDPOINT_KEY_ENDPOINT_COMPLETE)
             		&& response.node.value.equals(Boolean.TRUE.toString())) {
 
-            	NodeEndpointDescription endpoint = getEndpointFromKey(response.node.key, true);
-                addDiscoveredNode(endpoint);
+            	WiringEndpointDescription endpoint = getEndpointFromKey(response.node.key, true);
+                addDiscoveredEndpoint(endpoint);
 
             }
             
             // remove node on "delete" or "expire"
             else if ((response.action == EtcdKeyAction.delete || response.action == EtcdKeyAction.expire)) {
 
-            	NodeEndpointDescription endpoint = getEndpointFromKey(response.node.key, false);
-                removeDiscoveredNode(endpoint);
+            	WiringEndpointDescription endpoint = getEndpointFromKey(response.node.key, false);
+                removeDiscoveredEndpoint(endpoint);
 
             }
         }
         catch (Exception e) {
-            logError("Could not handle peer discovery node change!", e);
+            logError("Could not handle endpoint change!", e);
         }
         finally {
             setDirectoryWatch(index + 1);
         }
     }
     
-    private NodeEndpointDescription getEndpointFromKey(String key, boolean doGetEndpointProperties) {
+    private WiringEndpointDescription getEndpointFromKey(String key, boolean doGetEndpointProperties) {
 
     	String all = key.substring(m_configuration.getRootPath().length());
     	if (all.startsWith(SEP)) {
     		all = all.substring(1);
     	}
     	
-    	NodeEndpointDescription endpoint = new NodeEndpointDescription();
+    	WiringEndpointDescription endpoint = new WiringEndpointDescription();
     	
     	// zone
     	String zone = getNextPart(all); 
@@ -352,19 +352,19 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     	return rootPath;
     }
 
-    private String getZonePath(NodeEndpointDescription endpoint) {
+    private String getZonePath(WiringEndpointDescription endpoint) {
     	return getRootPath() + endpoint.getZone() + "/";
     }
     
-    private String getNodePath(NodeEndpointDescription endpoint) {
+    private String getNodePath(WiringEndpointDescription endpoint) {
     	return getZonePath(endpoint) + endpoint.getNode() + "/";
     }
 
-    private String getPathPath(NodeEndpointDescription endpoint) {
+    private String getPathPath(WiringEndpointDescription endpoint) {
     	return getNodePath(endpoint) + endpoint.getServiceId() + "/";
     }
 
-    private String getProtocolPath(NodeEndpointDescription endpoint) {
+    private String getProtocolPath(WiringEndpointDescription endpoint) {
     	return getPathPath(endpoint) + endpoint.getProtocol() + "/";
     }
     
@@ -394,14 +394,14 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 
         	m_lock.readLock().lock();
         	
-        	for (NodeEndpointDescription endpoint : m_publishedNodeEndpoints.values()) {
+        	for (WiringEndpointDescription endpoint : m_publishedEndpoints.values()) {
         		putPublishedEndpoint(endpoint);
         	}
         	
         	m_lock.readLock().unlock();
         }
 
-		public void putPublishedEndpoint(NodeEndpointDescription endpoint) throws Exception {
+		public void putPublishedEndpoint(WiringEndpointDescription endpoint) throws Exception {
 			
 			// put protocol
 			putDir(getProtocolPath(endpoint));
@@ -453,13 +453,13 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
         
         private void deleteLocalEndpoints() throws Exception {
         	m_lock.readLock().lock();
-        	for (NodeEndpointDescription endpoint : m_publishedNodeEndpoints.values()) {
+        	for (WiringEndpointDescription endpoint : m_publishedEndpoints.values()) {
         		deleteEndpoint(endpoint);
         	}
         	m_lock.readLock().unlock();
         }
         
-        public void deleteEndpoint(NodeEndpointDescription endpoint) throws Exception {
+        public void deleteEndpoint(WiringEndpointDescription endpoint) throws Exception {
         	m_etcd.deleteDir(getProtocolPath(endpoint)).recursive().send();
         }
         
@@ -473,7 +473,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 			try {
 				if (promise.getException() != null) {
 					logWarning("etcd watch received exception: %s", promise.getException().getMessage());
-					initDiscoveryNodes();
+					discoverEndpoints();
 					return;
 				}
 				handleDiscoveryNodeChange(promise.get());
@@ -484,9 +484,9 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     }
 
 	@Override
-	protected void addPublishedNode(NodeEndpointDescription endpoint) {
+	protected void addPublishedEndpoint(WiringEndpointDescription endpoint) {
 		m_lock.writeLock().lock();
-		m_publishedNodeEndpoints.put(endpoint.getUrl().toString(), endpoint);
+		m_publishedEndpoints.put(endpoint.getUrl().toString(), endpoint);
 		try {
 			m_updater.putPublishedEndpoint(endpoint);
 		} catch (Exception e) {
@@ -496,9 +496,9 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 	}
 
 	@Override
-	protected void removePublishedNode(NodeEndpointDescription endpoint) {
+	protected void removePublishedEndpoint(WiringEndpointDescription endpoint) {
 		m_lock.writeLock().lock();
-		m_publishedNodeEndpoints.remove(endpoint.getUrl().toString());
+		m_publishedEndpoints.remove(endpoint.getUrl().toString());
 		try {
 			m_updater.deleteEndpoint(endpoint);
 		} catch (Exception e) {

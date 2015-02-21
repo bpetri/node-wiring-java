@@ -17,7 +17,7 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.inaetics.wiring.NodeEndpointDescription;
+import org.inaetics.wiring.WiringEndpointDescription;
 import org.inaetics.wiring.base.IOUtil;
 import org.inaetics.wiring.endpoint.WiringEndpointListener;
 
@@ -33,11 +33,11 @@ public final class HttpServerEndpoint {
     private final ObjectMapper m_objectMapper = new ObjectMapper();
     private final JsonFactory m_jsonFactory = new JsonFactory(m_objectMapper);
 
-    private NodeEndpointDescription m_endpoint;
+    private WiringEndpointDescription m_endpoint;
     private WiringEndpointListener m_listener;
     private ServerEndpointProblemListener m_problemListener;
 
-    public HttpServerEndpoint(NodeEndpointDescription endpoint, WiringEndpointListener listener) {
+    public HttpServerEndpoint(WiringEndpointDescription endpoint, WiringEndpointListener listener) {
     	m_endpoint = endpoint;
     	m_listener = listener;
     }

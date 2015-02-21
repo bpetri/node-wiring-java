@@ -17,13 +17,13 @@ import java.util.Set;
 import org.inaetics.wiring.ExportRegistration;
 import org.inaetics.wiring.ImportReference;
 import org.inaetics.wiring.ImportRegistration;
-import org.inaetics.wiring.NodeEndpointDescription;
-import org.inaetics.wiring.NodeEndpointEvent;
-import org.inaetics.wiring.NodeEndpointEventListener;
+import org.inaetics.wiring.WiringEndpointDescription;
+import org.inaetics.wiring.WiringEndpointEvent;
+import org.inaetics.wiring.WiringEndpointEventListener;
 import org.inaetics.wiring.WiringAdmin;
 import org.inaetics.wiring.WiringAdminEvent;
 import org.inaetics.wiring.WiringAdminListener;
-import org.inaetics.wiring.base.AbstractNodePublishingComponent;
+import org.inaetics.wiring.base.AbstractWiringEndpointPublishingComponent;
 import org.inaetics.wiring.endpoint.WiringConstants;
 import org.inaetics.wiring.endpoint.WiringEndpoint;
 import org.inaetics.wiring.endpoint.WiringEndpointListener;
@@ -39,8 +39,8 @@ import org.osgi.service.cm.ManagedService;
  * 
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */
-public final class PromiscuousTopologyManager extends AbstractNodePublishingComponent implements
-    WiringAdminListener, NodeEndpointEventListener, ManagedService {
+public final class PromiscuousTopologyManager extends AbstractWiringEndpointPublishingComponent implements
+    WiringAdminListener, WiringEndpointEventListener, ManagedService {
 
     public final static String SERVICE_PID = "org.amdatu.remote.topology.promiscuous";
 
@@ -48,11 +48,11 @@ public final class PromiscuousTopologyManager extends AbstractNodePublishingComp
     private final Map<WiringEndpointListener, Map<WiringAdmin, ExportRegistration>> m_exportedEndpointListeners =
             new HashMap<WiringEndpointListener, Map<WiringAdmin, ExportRegistration>>();
 
-    private final Set<NodeEndpointDescription> m_importableEndpoints = new HashSet<NodeEndpointDescription>();
-    private final Map<NodeEndpointDescription, Map<WiringAdmin, ImportRegistration>> m_importedEndpoints =
-        new HashMap<NodeEndpointDescription, Map<WiringAdmin, ImportRegistration>>();
-    private final Map<NodeEndpointDescription, ServiceRegistration<WiringEndpoint>> m_registeredServices =
-            new HashMap<NodeEndpointDescription, ServiceRegistration<WiringEndpoint>>();
+    private final Set<WiringEndpointDescription> m_importableEndpoints = new HashSet<WiringEndpointDescription>();
+    private final Map<WiringEndpointDescription, Map<WiringAdmin, ImportRegistration>> m_importedEndpoints =
+        new HashMap<WiringEndpointDescription, Map<WiringAdmin, ImportRegistration>>();
+    private final Map<WiringEndpointDescription, ServiceRegistration<WiringEndpoint>> m_registeredServices =
+            new HashMap<WiringEndpointDescription, ServiceRegistration<WiringEndpoint>>();
 
     private final List<WiringAdmin> m_wiringAdmins = new ArrayList<WiringAdmin>();
 
@@ -100,12 +100,12 @@ public final class PromiscuousTopologyManager extends AbstractNodePublishingComp
     }
     
 	@Override
-	public void nodeChanged(NodeEndpointEvent event) {
+	public void endpointChanged(WiringEndpointEvent event) {
 		switch (event.getType()) {
-			case NodeEndpointEvent.ADDED:
+			case WiringEndpointEvent.ADDED:
 				importEndpoint(event.getEndpoint());
 				break;
-			case NodeEndpointEvent.REMOVED:
+			case WiringEndpointEvent.REMOVED:
 				unImportEndpoint(event.getEndpoint());
 				break;
 			default:
@@ -145,23 +145,23 @@ public final class PromiscuousTopologyManager extends AbstractNodePublishingComp
 		adminMap.put(admin, exportRegistration);
 		
 		// notify endpoint listeners
-		nodeAdded(exportRegistration.getExportReference().getEndpointDescription());
+		endpointAdded(exportRegistration.getExportReference().getEndpointDescription());
 	}
 	
 	private void importEndpoints(WiringAdmin admin) {
-    	for (NodeEndpointDescription nodeEndpointDescription : m_importableEndpoints) {
+    	for (WiringEndpointDescription nodeEndpointDescription : m_importableEndpoints) {
     		importEndpoint(admin, nodeEndpointDescription);
 		}
 	}
 
-	private void importEndpoint(NodeEndpointDescription endpointDescription) {
+	private void importEndpoint(WiringEndpointDescription endpointDescription) {
 		m_importableEndpoints.add(endpointDescription);
 		for (WiringAdmin admin : m_wiringAdmins) {
 			importEndpoint(admin, endpointDescription);
 		}
 	}
 	
-	private void importEndpoint(WiringAdmin admin, NodeEndpointDescription endpointDescription) {
+	private void importEndpoint(WiringAdmin admin, WiringEndpointDescription endpointDescription) {
 		
 		// import endpoints
 	    ImportRegistration importRegistration = admin.importEndpoint(endpointDescription);
@@ -178,7 +178,7 @@ public final class PromiscuousTopologyManager extends AbstractNodePublishingComp
 	private void registerService(ImportRegistration registration) {
 
 		ImportReference importReference = registration.getImportReference();
-		NodeEndpointDescription endpointDescription = importReference.getEndpointDescription();
+		WiringEndpointDescription endpointDescription = importReference.getEndpointDescription();
 		WiringEndpoint wiringEndpoint = importReference.getEndpoint();
 		
 		Dictionary<String, Object> properties = new Hashtable<String, Object>();
@@ -213,7 +213,7 @@ public final class PromiscuousTopologyManager extends AbstractNodePublishingComp
 	}
 	
 	private void unExport(ExportRegistration registration) {
-		nodeRemoved(registration.getExportReference().getEndpointDescription());
+		endpointRemoved(registration.getExportReference().getEndpointDescription());
 		registration.close();
 	}
 	
@@ -229,7 +229,7 @@ public final class PromiscuousTopologyManager extends AbstractNodePublishingComp
 		}
 	}
 	
-	private void unImportEndpoint(NodeEndpointDescription endpointDescription) {
+	private void unImportEndpoint(WiringEndpointDescription endpointDescription) {
 		m_importableEndpoints.remove(endpointDescription);
 		Map<WiringAdmin, ImportRegistration> adminMap = m_importedEndpoints.remove(endpointDescription);
 		Collection<ImportRegistration> registrations = adminMap.values();
@@ -240,7 +240,7 @@ public final class PromiscuousTopologyManager extends AbstractNodePublishingComp
 		unregisterService(endpointDescription);
 	}
 	
-	private void unregisterService(NodeEndpointDescription endpointDescription) {
+	private void unregisterService(WiringEndpointDescription endpointDescription) {
 		ServiceRegistration<WiringEndpoint> serviceRegistration = m_registeredServices.get(endpointDescription);
 		serviceRegistration.unregister();
 		m_registeredServices.remove(endpointDescription);

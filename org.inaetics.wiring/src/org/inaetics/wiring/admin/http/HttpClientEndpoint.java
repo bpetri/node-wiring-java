@@ -15,7 +15,7 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.inaetics.wiring.NodeEndpointDescription;
+import org.inaetics.wiring.WiringEndpointDescription;
 import org.osgi.framework.ServiceException;
 
 /**
@@ -30,13 +30,13 @@ public final class HttpClientEndpoint {
     private final ObjectMapper m_objectMapper = new ObjectMapper();
     private final JsonFactory m_JsonFactory = new JsonFactory(m_objectMapper);
 
-    private final NodeEndpointDescription m_endpoint;
+    private final WiringEndpointDescription m_endpoint;
     private final HttpAdminConfiguration m_configuration;
 
     private ClientEndpointProblemListener m_problemListener;
     private int m_remoteErrors;
 
-    public HttpClientEndpoint(NodeEndpointDescription endpoint, HttpAdminConfiguration configuration) {
+    public HttpClientEndpoint(WiringEndpointDescription endpoint, HttpAdminConfiguration configuration) {
         m_endpoint = endpoint;
         m_configuration = configuration;
         m_remoteErrors = 0;

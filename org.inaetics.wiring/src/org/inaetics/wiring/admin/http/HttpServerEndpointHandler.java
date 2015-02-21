@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.inaetics.wiring.NodeEndpointDescription;
+import org.inaetics.wiring.WiringEndpointDescription;
 import org.inaetics.wiring.base.AbstractComponentDelegate;
 import org.inaetics.wiring.endpoint.WiringEndpointListener;
 
@@ -31,8 +31,8 @@ import org.inaetics.wiring.endpoint.WiringEndpointListener;
  */
 public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
 
-    private final Map<NodeEndpointDescription, HttpServerEndpoint> m_handlers =
-    		new HashMap<NodeEndpointDescription, HttpServerEndpoint>();
+    private final Map<WiringEndpointDescription, HttpServerEndpoint> m_handlers =
+    		new HashMap<WiringEndpointDescription, HttpServerEndpoint>();
     
     private final ReentrantReadWriteLock m_lock = new ReentrantReadWriteLock();
 
@@ -72,7 +72,7 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
      * @param endpoint The Endpoint Description
      * @param listener 
      */
-    public HttpServerEndpoint addEndpoint(NodeEndpointDescription endpoint, WiringEndpointListener listener) {
+    public HttpServerEndpoint addEndpoint(WiringEndpointDescription endpoint, WiringEndpointListener listener) {
 
         HttpServerEndpoint serverEndpoint = new HttpServerEndpoint(endpoint, listener);
 
@@ -91,7 +91,7 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
      * 
      * @param endpoint The Endpoint Description
      */
-    public HttpServerEndpoint removeEndpoint(NodeEndpointDescription endpoint) {
+    public HttpServerEndpoint removeEndpoint(WiringEndpointDescription endpoint) {
         HttpServerEndpoint serv;
 
         m_lock.writeLock().lock();
@@ -107,7 +107,7 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
     private HttpServerEndpoint getHandler(String path) {
         m_lock.readLock().lock();
         try {
-        	for (NodeEndpointDescription endpoint : m_handlers.keySet()) {
+        	for (WiringEndpointDescription endpoint : m_handlers.keySet()) {
         		if (endpoint.getServiceId().equals(path)) {
         			return m_handlers.get(endpoint);
         		}
@@ -147,7 +147,7 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
 
         m_lock.readLock().lock();
         try {
-            for (NodeEndpointDescription endpoint : m_handlers.keySet()) {
+            for (WiringEndpointDescription endpoint : m_handlers.keySet()) {
                 gen.writeString(endpoint.getServiceId());
             }
         }

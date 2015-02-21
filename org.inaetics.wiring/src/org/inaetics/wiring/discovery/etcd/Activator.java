@@ -13,7 +13,7 @@ import java.util.Properties;
 import org.apache.felix.dm.Component;
 import org.apache.felix.dm.DependencyActivatorBase;
 import org.apache.felix.dm.DependencyManager;
-import org.inaetics.wiring.NodeEndpointEventListener;
+import org.inaetics.wiring.WiringEndpointEventListener;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.service.cm.ConfigurationException;
@@ -114,11 +114,11 @@ public class Activator extends DependencyActivatorBase implements EtcdDiscoveryC
             new EtcdNodeDiscovery(this);
 
         Component component = createComponent()
-            .setInterface(new String[] { NodeEndpointEventListener.class.getName() },
+            .setInterface(new String[] { WiringEndpointEventListener.class.getName() },
                 properties)
             .setImplementation(discovery)
             .add(createServiceDependency()
-                .setService(NodeEndpointEventListener.class)
+                .setService(WiringEndpointEventListener.class)
                 .setCallbacks("eventListenerAdded", "eventListenerModified", "eventListenerRemoved")
                 .setRequired(false))
             .add(createServiceDependency()

@@ -52,7 +52,7 @@ public class WiringAdminEvent {
 	 */
 	public static final int			IMPORT_WARNING			= 8;
 
-	private final NodeEndpointDescription endpointDesciption;
+	private final WiringEndpointDescription endpointDesciption;
 	private final Throwable			exception;
 	private final int				type;
 	private final Bundle			source;
@@ -65,7 +65,7 @@ public class WiringAdminEvent {
 	 * @param endpointDescription The endpointDescription, can be {@code null}.
 	 * @param exception Any exceptions encountered, can be {@code null}
 	 */
-	private WiringAdminEvent(int type, Bundle source, NodeEndpointDescription endpointDescription, Throwable exception) {
+	private WiringAdminEvent(int type, Bundle source, WiringEndpointDescription endpointDescription, Throwable exception) {
 		if (source == null) {
 			throw new NullPointerException("source must not be null");
 		}
@@ -80,7 +80,7 @@ public class WiringAdminEvent {
 	 * 
 	 * @return The EndpointDescription or {@code null}.
 	 */
-	public NodeEndpointDescription getEndpointDescription() {
+	public WiringEndpointDescription getEndpointDescription() {
 		return endpointDesciption;
 	}
 

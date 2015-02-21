@@ -21,6 +21,6 @@ public interface ImportReference {
 	 * @return The Endpoint Description for the remote endpoint. Must be
 	 *         {@code null} when the service is no longer imported.
 	 */
-	NodeEndpointDescription getEndpointDescription();
+	WiringEndpointDescription getEndpointDescription();
 	
 }
