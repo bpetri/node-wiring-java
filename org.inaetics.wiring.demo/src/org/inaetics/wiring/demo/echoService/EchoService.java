@@ -23,7 +23,9 @@ public class EchoService implements WiringEndpointListener {
 		
 		try {
 
-			WiringEndpoint wiringEndpoint = Util.getWiringEndpoint(m_context, message);
+			WiringEndpoint wiringEndpoint = Util.getWiringEndpoint(m_context,
+					message.getRemoteZone(), message.getRemoteNode(), message.getRemoteEndpointName());
+			
 			if (wiringEndpoint == null) {
 				m_logService.log(LogService.LOG_ERROR, "endpoint not found for message %s" + message);
 			}

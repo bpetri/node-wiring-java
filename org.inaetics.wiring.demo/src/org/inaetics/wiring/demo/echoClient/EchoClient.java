@@ -26,17 +26,14 @@ public class EchoClient implements WiringEndpointListener {
 		sendMessage("zone1", "node1", "echoService", "test message");
 	}
 	
-	public void sendMessage(String zone, String node, String path, String message) {
+	public void sendMessage(String zone, String node, String endpointName, String message) {
 
 		Message messageObject = new Message();
-		messageObject.setLocalPath("echoClient");
-		messageObject.setRemoteZone(zone);
-		messageObject.setRemoteNode(node);
-		messageObject.setRemotePath(path);
+		messageObject.setLocalEndpointName("echoClient");
 		messageObject.setMessage(message);
 		
 		try {
-			WiringEndpoint wiringEndpoint = Util.getWiringEndpoint(m_context, messageObject);
+			WiringEndpoint wiringEndpoint = Util.getWiringEndpoint(m_context, zone, node, endpointName);
 			if (wiringEndpoint == null) {
 				m_logService.log(LogService.LOG_ERROR, "endpoint not found for message %s" + message);
 			}

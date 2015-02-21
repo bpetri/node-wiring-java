@@ -11,7 +11,6 @@ import org.apache.felix.dm.DependencyActivatorBase;
 import org.apache.felix.dm.DependencyManager;
 import org.apache.felix.service.command.CommandProcessor;
 import org.inaetics.wiring.endpoint.WiringConstants;
-import org.inaetics.wiring.endpoint.WiringEndpoint;
 import org.inaetics.wiring.endpoint.WiringEndpointListener;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
@@ -25,7 +24,7 @@ public class Activator extends DependencyActivatorBase {
 			throws Exception {
 
 		Dictionary<String, Object> properties = new Hashtable<String, Object>();
-		properties.put(WiringConstants.PROPERTY_SERVICE_ID, "echoClient");
+		properties.put(WiringConstants.PROPERTY_ENDPOINT_NAME, "echoClient");
 		properties.put(CommandProcessor.COMMAND_SCOPE, "echo");
 		properties.put(CommandProcessor.COMMAND_FUNCTION, new String[]{"sendMessage", "tm"});
 		
