@@ -6,7 +6,8 @@ package org.inaetics.wiring.admin.http;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.CONNECT_TIMEOUT_CONFIG_KEY;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.NODE_CONFIG_KEY;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.PATH_CONFIG_KEY;
-import static org.inaetics.wiring.admin.http.HttpAdminConstants.PROTOCOL;
+import static org.inaetics.wiring.admin.http.HttpAdminConstants.PROTOCOL_NAME;
+import static org.inaetics.wiring.admin.http.HttpAdminConstants.PROTOCOL_VERSION;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.READ_TIMEOUT_CONFIG_KEY;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.SERVICE_PID;
 import static org.inaetics.wiring.admin.http.HttpAdminConstants.ZONE_CONFIG_KEY;
@@ -148,7 +149,7 @@ public final class Activator extends DependencyActivatorBase implements ManagedS
 
 		Dictionary<String, Object> properties = new Hashtable<String, Object>();
         properties.put(HttpAdminConstants.ADMIN, true);
-        properties.put(HttpAdminConstants.ADMIN_TYPE, PROTOCOL);
+        properties.put(HttpAdminConstants.ADMIN_TYPE, PROTOCOL_NAME + ";" + PROTOCOL_VERSION);
 
 		Component listenerComponent = createComponent()
 				.setInterface(WiringAdmin.class.getName(), properties)

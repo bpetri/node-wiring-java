@@ -85,12 +85,12 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
     
     // Dependency Manager callback method
     public void endpointListenerAdded(ServiceReference<WiringEndpointListener> reference, WiringEndpointListener listener) {
-    	String serviceId = (String) reference.getProperty(WiringConstants.PROPERTY_SERVICE_ID);
-    	if (serviceId == null) {
-    		logError("missing service id property, will not export %s", listener);
+    	String name = (String) reference.getProperty(WiringConstants.PROPERTY_ENDPOINT_NAME);
+    	if (name == null) {
+    		logError("missing name property, will not export %s", listener);
     		return;
     	}
-    	exportEndpoints(listener, serviceId);
+    	exportEndpoints(listener, name);
     }
 
     // Dependency Manager callback method
@@ -109,7 +109,7 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 				unImportEndpoint(event.getEndpoint());
 				break;
 			default:
-				logError("unknown node endpoint event type: %s", event.getType());
+				logError("unknown wiring endpoint event type: %s", event.getType());
 		}
 	}
 
@@ -149,8 +149,8 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 	}
 	
 	private void importEndpoints(WiringAdmin admin) {
-    	for (WiringEndpointDescription nodeEndpointDescription : m_importableEndpoints) {
-    		importEndpoint(admin, nodeEndpointDescription);
+    	for (WiringEndpointDescription endpointDescription : m_importableEndpoints) {
+    		importEndpoint(admin, endpointDescription);
 		}
 	}
 
@@ -184,7 +184,7 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 		Dictionary<String, Object> properties = new Hashtable<String, Object>();
         properties.put(WiringConstants.PROPERTY_ZONE_ID, endpointDescription.getZone());
         properties.put(WiringConstants.PROPERTY_NODE_ID, endpointDescription.getNode());
-        properties.put(WiringConstants.PROPERTY_SERVICE_ID, endpointDescription.getServiceId());
+        properties.put(WiringConstants.PROPERTY_ENDPOINT_NAME, endpointDescription.getEndpointName());
     		
         ServiceRegistration<WiringEndpoint> serviceRegistration = m_context.registerService(WiringEndpoint.class, wiringEndpoint, properties);
         m_registeredServices.put(endpointDescription, serviceRegistration);

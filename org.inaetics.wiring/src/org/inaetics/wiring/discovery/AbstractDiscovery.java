@@ -3,7 +3,6 @@
  */
 package org.inaetics.wiring.discovery;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -27,7 +26,7 @@ import org.inaetics.wiring.discovery.etcd.EtcdDiscoveryConfiguration;
 public abstract class AbstractDiscovery extends AbstractWiringEndpointPublishingComponent implements WiringEndpointEventListener {
 
     private final EtcdDiscoveryConfiguration m_configuration;
-    private final ConcurrentHashMap<URL, WiringEndpointDescription> m_endpoints = new ConcurrentHashMap<URL, WiringEndpointDescription>();
+    private final ConcurrentHashMap<String, WiringEndpointDescription> m_endpoints = new ConcurrentHashMap<String, WiringEndpointDescription>();
 
 	public AbstractDiscovery(String name, EtcdDiscoveryConfiguration configuration) {
         super("discovery", name);
@@ -112,7 +111,7 @@ public abstract class AbstractDiscovery extends AbstractWiringEndpointPublishing
     		return;
     	}
     	
-    	m_endpoints.put(endpoint.getUrl(), endpoint);
+    	m_endpoints.put(endpoint.getId(), endpoint);
 
     	executeTask(new Runnable() {
 
@@ -136,7 +135,7 @@ public abstract class AbstractDiscovery extends AbstractWiringEndpointPublishing
     		return;
     	}
 
-    	m_endpoints.remove(endpoint.getUrl());
+    	m_endpoints.remove(endpoint.getId());
     	
     	executeTask(new Runnable() {
 

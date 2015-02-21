@@ -53,11 +53,12 @@ public final class ExportedEndpointImpl implements ExportRegistration, ExportRef
     		m_endpointDescription = new WiringEndpointDescription();
     		m_endpointDescription.setZone(m_configuration.getZone());
     		m_endpointDescription.setNode(m_configuration.getNode());
-    		m_endpointDescription.setServiceId(serviceId);
-    		m_endpointDescription.setProtocol(HttpAdminConstants.PROTOCOL);
+    		m_endpointDescription.setEndpointName(serviceId);
+    		m_endpointDescription.setProtocolName(HttpAdminConstants.PROTOCOL_NAME);
+    		m_endpointDescription.setProtocolVersion(HttpAdminConstants.PROTOCOL_VERSION);
     		
     		try {
-    			m_endpointDescription.setUrl(new URL(m_configuration.getBaseUrl().toString() + serviceId));
+    			m_endpointDescription.setProperty(HttpWiringEndpointProperties.URL, new URL(m_configuration.getBaseUrl().toString() + serviceId).toString());
     		} catch (MalformedURLException e) {
     			m_exception = e;
     			return;

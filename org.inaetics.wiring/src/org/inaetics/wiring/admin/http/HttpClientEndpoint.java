@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URL;
 
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
@@ -87,7 +88,8 @@ public final class HttpClientEndpoint {
         ExceptionWrapper exception = null;
         try {
         	
-            connection = (HttpURLConnection) m_endpoint.getUrl().openConnection();
+        	URL url = new URL(m_endpoint.getProperty(HttpWiringEndpointProperties.URL));
+            connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setUseCaches(false);
             connection.setDoOutput(true);

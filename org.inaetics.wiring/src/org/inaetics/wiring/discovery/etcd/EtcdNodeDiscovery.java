@@ -4,13 +4,12 @@
 package org.inaetics.wiring.discovery.etcd;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -39,8 +38,6 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 	public static final String DISCOVERY_NAME = "Amdatu Wiring Node Discovery (Etcd)";
     public static final String DISCOVERY_TYPE = "etcd";
 
-    private static final String ENDPOINT_KEY_URL = "url";
-//    private static final String ENDPOINT_KEY_METADATA = "metadata";
     private static final String ENDPOINT_KEY_ENDPOINT_COMPLETE = "complete";
     private static final String SEP = "/";
 
@@ -164,18 +161,18 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
                             		if(protocolNode.dir && protocolNode.nodes != null) {
 	                        			String protocol = getLastPart(protocolNode.key);
                             			
-                                		String url = null;
+                                		Map<String, String> properties = new HashMap<String, String>();
                             			String complete = Boolean.FALSE.toString();
                             			
                             			// endpoint properties
-	                                	for (EtcdNode endpointNode : protocolNode.nodes) {
+	                                	for (EtcdNode propertyNode : protocolNode.nodes) {
 	                                		
-	                                		String key = getLastPart(endpointNode.key);
-	                                		if (key.equals(ENDPOINT_KEY_URL)) {
-	                                			url = endpointNode.value;
+	                                		String propertyKey = getLastPart(propertyNode.key);
+	                                		if (!propertyKey.equals(ENDPOINT_KEY_ENDPOINT_COMPLETE)) {
+	                                			properties.put(propertyKey, propertyNode.value);
 	                                		}
-	                                		else if (key.equals(ENDPOINT_KEY_ENDPOINT_COMPLETE)) {
-	                                			complete = endpointNode.value;
+	                                		else {
+	                                			complete = propertyNode.value;
 	                                		}
 	                                	}
 
@@ -185,9 +182,11 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 	                                		WiringEndpointDescription endpointDescription = new WiringEndpointDescription();
 	                                		endpointDescription.setZone(zone);
 	                                		endpointDescription.setNode(node);
-	                                		endpointDescription.setServiceId(path);
-	                                		endpointDescription.setProtocol(protocol);
-	                                		endpointDescription.setUrl(parseEndpoint(url));
+	                                		endpointDescription.setEndpointName(path);
+	                                		String[] protocolParts = splitProtocol(protocol);
+	                                		endpointDescription.setProtocolName(protocolParts[0]);
+	                                		endpointDescription.setProtocolVersion(protocolParts[1]);
+	                                		endpointDescription.setProperties(properties);
 	                                		
 	                                		endpoints.add(endpointDescription);
 	                                	}
@@ -265,12 +264,15 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     	
     	// path
     	String path = getNextPart(all); 
-    	endpoint.setServiceId(path);
+    	endpoint.setEndpointName(path);
     	all = all.substring(path.length() + 1);
     	
     	// protocol
     	String protocol = getNextPart(all);
-    	endpoint.setProtocol(protocol);
+    	// format is currently "protocolName;version=protocolVersion"
+    	String[] protocolParts = protocol.split(";");
+    	endpoint.setProtocolName(protocolParts[0]);
+    	endpoint.setProtocolVersion(protocolParts[1].substring(protocolParts[1].indexOf("=") + 1));
     	all = all.substring(protocol.length() + 1);
 
     	if(doGetEndpointProperties) {
@@ -281,12 +283,11 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     			String endpointKey = key.substring(0, key.lastIndexOf(SEP));
     			EtcdNode endpointNode = m_etcd.get(endpointKey).recursive().send().get().node;
     			
-            	for (EtcdNode propertyNode : endpointNode.nodes) {
+    			// set properties
+    			for (EtcdNode propertyNode : endpointNode.nodes) {
             		String propertyKey = getLastPart(propertyNode.key);
-            		
-            		// url
-            		if (propertyKey.equals(ENDPOINT_KEY_URL)) {
-            			endpoint.setUrl(new URL(propertyNode.value));
+            		if (!propertyKey.equals(ENDPOINT_KEY_ENDPOINT_COMPLETE)) {
+            			endpoint.setProperty(propertyKey, propertyNode.value);
             		}
             	}
     			
@@ -303,6 +304,14 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     	return s.contains(SEP) ? s.substring(0, s.indexOf(SEP)) : null;
     }
 
+    private String[] splitProtocol(String protocol) {
+    	String[] result = new String[2];
+    	String[] protocolParts = protocol.split(";");
+    	result[0] = protocolParts[0];
+    	result[1] = protocolParts[1].substring(protocolParts[1].indexOf("=") + 1);
+    	return result;
+    }
+    
     private long getEtcdIndex(EtcdKeysResponse response) {
 
         long index = 0l;
@@ -361,20 +370,11 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     }
 
     private String getPathPath(WiringEndpointDescription endpoint) {
-    	return getNodePath(endpoint) + endpoint.getServiceId() + "/";
+    	return getNodePath(endpoint) + endpoint.getEndpointName() + "/";
     }
 
     private String getProtocolPath(WiringEndpointDescription endpoint) {
-    	return getPathPath(endpoint) + endpoint.getProtocol() + "/";
-    }
-    
-    private URL parseEndpoint(String endpoint) {
-    	try {
-			return new URL(endpoint);
-		} catch (MalformedURLException e) {
-			logWarning("malformed url, can not parse endpoint: %s",	endpoint);
-			return null;
-		}
+    	return getPathPath(endpoint) + endpoint.getProtocolName() + ";version=" + endpoint.getProtocolVersion() + "/";
     }
     
     private class EtcdRegistrationUpdater implements Runnable {
@@ -406,8 +406,12 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 			// put protocol
 			putDir(getProtocolPath(endpoint));
 
-        	// put endpoint url
-        	m_etcd.put(getProtocolPath(endpoint) + ENDPOINT_KEY_URL, endpoint.getUrl().toString()).send().get();
+        	// put endpoint properties
+			Map<String, String> properties = endpoint.getProperties();
+			Set<String> keys = properties.keySet();
+			for (String key : keys) {
+	        	m_etcd.put(getProtocolPath(endpoint) + key, properties.get(key)).send().get();
+			}
         	
         	// put marker that everything is written
         	m_etcd.put(getProtocolPath(endpoint) + ENDPOINT_KEY_ENDPOINT_COMPLETE, Boolean.TRUE.toString()).send().get();
@@ -486,7 +490,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 	@Override
 	protected void addPublishedEndpoint(WiringEndpointDescription endpoint) {
 		m_lock.writeLock().lock();
-		m_publishedEndpoints.put(endpoint.getUrl().toString(), endpoint);
+		m_publishedEndpoints.put(endpoint.getId(), endpoint);
 		try {
 			m_updater.putPublishedEndpoint(endpoint);
 		} catch (Exception e) {
@@ -498,7 +502,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 	@Override
 	protected void removePublishedEndpoint(WiringEndpointDescription endpoint) {
 		m_lock.writeLock().lock();
-		m_publishedEndpoints.remove(endpoint.getUrl().toString());
+		m_publishedEndpoints.remove(endpoint.getId());
 		try {
 			m_updater.deleteEndpoint(endpoint);
 		} catch (Exception e) {

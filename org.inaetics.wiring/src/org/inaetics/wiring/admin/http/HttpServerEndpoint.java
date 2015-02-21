@@ -95,13 +95,13 @@ public final class HttpServerEndpoint {
     	// switch remote and local fields in message
     	String newRemoteZone = message.getLocalZone();
     	String newRemoteNode = message.getLocalNode();
-    	String newRemotePath = message.getLocalPath();
+    	String newRemotePath = message.getLocalEndpointName();
     	message.setLocalZone(message.getRemoteZone());
     	message.setLocalNode(message.getRemoteNode());
-    	message.setLocalPath(message.getRemotePath());
+    	message.setLocalEndpointName(message.getRemoteEndpointName());
     	message.setRemoteZone(newRemoteZone);
     	message.setRemoteNode(newRemoteNode);
-    	message.setRemotePath(newRemotePath);
+    	message.setRemoteEndpointName(newRemotePath);
     }
 
 }

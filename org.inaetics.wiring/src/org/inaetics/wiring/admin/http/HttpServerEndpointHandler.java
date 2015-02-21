@@ -108,7 +108,7 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
         m_lock.readLock().lock();
         try {
         	for (WiringEndpointDescription endpoint : m_handlers.keySet()) {
-        		if (endpoint.getServiceId().equals(path)) {
+        		if (endpoint.getEndpointName().equals(path)) {
         			return m_handlers.get(endpoint);
         		}
         	}
@@ -148,7 +148,7 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
         m_lock.readLock().lock();
         try {
             for (WiringEndpointDescription endpoint : m_handlers.keySet()) {
-                gen.writeString(endpoint.getServiceId());
+                gen.writeString(endpoint.getEndpointName());
             }
         }
         finally {

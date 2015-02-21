@@ -9,7 +9,19 @@ public class FullMessage extends Message {
 	
 	private String localZone;
 	private String localNode;
-	
+
+	public void setRemoteZone(String targetZone) {
+		this.remoteZone = targetZone;
+	}
+
+	public void setRemoteNode(String targetNode) {
+		this.remoteNode = targetNode;
+	}
+
+	public void setRemoteEndpointName(String remoteEndpointName) {
+		this.remoteEndpointName = remoteEndpointName;
+	}
+
 	public String getLocalZone() {
 		return localZone;
 	}

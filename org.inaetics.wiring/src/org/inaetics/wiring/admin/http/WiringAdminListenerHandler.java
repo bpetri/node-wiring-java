@@ -41,11 +41,12 @@ public class WiringAdminListenerHandler extends AbstractComponentDelegate {
 		WiringEndpointDescription endpoint = new WiringEndpointDescription();
 		endpoint.setZone(m_configuration.getZone());
 		endpoint.setNode(m_configuration.getNode());
-		endpoint.setServiceId(serviceId);
-		endpoint.setProtocol(HttpAdminConstants.PROTOCOL);
+		endpoint.setEndpointName(serviceId);
+		endpoint.setProtocolName(HttpAdminConstants.PROTOCOL_NAME);
+		endpoint.setProtocolVersion(HttpAdminConstants.PROTOCOL_VERSION);
 		
 		try {
-			endpoint.setUrl(new URL(m_configuration.getBaseUrl().toString() + serviceId));
+			endpoint.setProperty(HttpWiringEndpointProperties.URL, new URL(m_configuration.getBaseUrl().toString() + serviceId).toString());
 		} catch (MalformedURLException e) {
 			logError("error creating endpoint url", e);
 		}
