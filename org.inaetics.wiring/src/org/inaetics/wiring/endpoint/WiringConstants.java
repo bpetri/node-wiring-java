@@ -23,6 +23,6 @@ public interface WiringConstants {
 	/**
 	 * the security level of the wire. Possible values: "yes", "no" 
 	 */
-	public static final String PROPERTY_SECURITY = "inaetics.wiring.secure";
+	public static final String PROPERTY_SECURE = "wire.secure";
 	
 }

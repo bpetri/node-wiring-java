@@ -185,6 +185,7 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
         properties.put(WiringConstants.PROPERTY_ZONE_ID, endpointDescription.getZone());
         properties.put(WiringConstants.PROPERTY_NODE_ID, endpointDescription.getNode());
         properties.put(WiringConstants.PROPERTY_ENDPOINT_NAME, endpointDescription.getEndpointName());
+        properties.put(WiringConstants.PROPERTY_SECURE, endpointDescription.getProperty(WiringConstants.PROPERTY_SECURE));
     		
         ServiceRegistration<WiringEndpoint> serviceRegistration = m_context.registerService(WiringEndpoint.class, wiringEndpoint, properties);
         m_registeredServices.put(endpointDescription, serviceRegistration);

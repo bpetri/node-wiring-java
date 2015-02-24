@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.inaetics.wiring.ExportReference;
 import org.inaetics.wiring.ExportRegistration;
 import org.inaetics.wiring.WiringEndpointDescription;
+import org.inaetics.wiring.endpoint.WiringConstants;
 import org.inaetics.wiring.endpoint.WiringEndpointListener;
 
 /**
@@ -41,7 +42,7 @@ public final class ExportedEndpointImpl implements ExportRegistration, ExportRef
      * @param properties the export properties
      */
     public ExportedEndpointImpl(HttpServerEndpointHandler endpointHandler, WiringEndpointListener endpoint,
-    		String serviceId, HttpAdminConfiguration configuration) {
+    		String endpointName, HttpAdminConfiguration configuration) {
 
         m_endpointHandler = endpointHandler;
         m_endpoint = endpoint;
@@ -53,12 +54,14 @@ public final class ExportedEndpointImpl implements ExportRegistration, ExportRef
     		m_endpointDescription = new WiringEndpointDescription();
     		m_endpointDescription.setZone(m_configuration.getZone());
     		m_endpointDescription.setNode(m_configuration.getNode());
-    		m_endpointDescription.setEndpointName(serviceId);
+    		m_endpointDescription.setEndpointName(endpointName);
     		m_endpointDescription.setProtocolName(HttpAdminConstants.PROTOCOL_NAME);
     		m_endpointDescription.setProtocolVersion(HttpAdminConstants.PROTOCOL_VERSION);
     		
+    		m_endpointDescription.setProperty(WiringConstants.PROPERTY_SECURE, HttpAdminConstants.SECURE);
+    		
     		try {
-    			m_endpointDescription.setProperty(HttpWiringEndpointProperties.URL, new URL(m_configuration.getBaseUrl().toString() + serviceId).toString());
+    			m_endpointDescription.setProperty(HttpWiringEndpointProperties.URL, new URL(m_configuration.getBaseUrl().toString() + endpointName).toString());
     		} catch (MalformedURLException e) {
     			m_exception = e;
     			return;

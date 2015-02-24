@@ -72,4 +72,5 @@ public interface HttpAdminConstants {
     
     String PROTOCOL_NAME = "inaetics-http";
     String PROTOCOL_VERSION = "1.0";
+    String SECURE = "no";
 }
