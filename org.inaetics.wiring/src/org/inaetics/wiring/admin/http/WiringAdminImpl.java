@@ -62,6 +62,15 @@ public final class WiringAdminImpl extends AbstractComponentDelegate implements 
 
 	@Override
 	public ImportRegistration importEndpoint(WiringEndpointDescription endpoint) {
+		
+		// check protocol
+		if (!endpoint.getProtocolName().equals(HttpAdminConstants.PROTOCOL_NAME)
+				|| !endpoint.getProtocolVersion().equals(HttpAdminConstants.PROTOCOL_VERSION)) {
+		
+			logWarning("protocol not supported: %s %s", endpoint.getProtocolName(), endpoint.getProtocolVersion());
+			return null;
+		}
+		
 		ImportedEndpointImpl endpointImpl = new ImportedEndpointImpl(m_manager.getClientEndpointFactory(), endpoint, m_configuration);
 		m_importedEndpoints.add(endpointImpl);
 		return endpointImpl;

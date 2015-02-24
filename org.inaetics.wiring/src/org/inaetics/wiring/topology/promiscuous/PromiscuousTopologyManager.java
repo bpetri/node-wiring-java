@@ -165,14 +165,16 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 		
 		// import endpoints
 	    ImportRegistration importRegistration = admin.importEndpoint(endpointDescription);
-		Map<WiringAdmin, ImportRegistration> adminMap = m_importedEndpoints.get(endpointDescription);
-		if (adminMap == null) {
-			adminMap = new HashMap<WiringAdmin, ImportRegistration>();
-			m_importedEndpoints.put(endpointDescription, adminMap);
-		}
-		adminMap.put(admin, importRegistration);
-		
-		registerService(importRegistration);
+	    
+	    if (importRegistration != null) {
+			Map<WiringAdmin, ImportRegistration> adminMap = m_importedEndpoints.get(endpointDescription);
+			if (adminMap == null) {
+				adminMap = new HashMap<WiringAdmin, ImportRegistration>();
+				m_importedEndpoints.put(endpointDescription, adminMap);
+			}
+			adminMap.put(admin, importRegistration);
+			registerService(importRegistration);
+	    }
 	}
 	
 	private void registerService(ImportRegistration registration) {
