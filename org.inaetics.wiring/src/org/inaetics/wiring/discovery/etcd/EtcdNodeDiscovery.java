@@ -19,7 +19,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import mousio.client.promises.ResponsePromise;
 import mousio.client.promises.ResponsePromise.IsSimplePromiseResponseHandler;
 import mousio.etcd4j.EtcdClient;
-import mousio.etcd4j.requests.EtcdKeyPutRequest;
 import mousio.etcd4j.responses.EtcdException;
 import mousio.etcd4j.responses.EtcdKeyAction;
 import mousio.etcd4j.responses.EtcdKeysResponse;
@@ -38,8 +37,14 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 	public static final String DISCOVERY_NAME = "Amdatu Wiring Node Discovery (Etcd)";
     public static final String DISCOVERY_TYPE = "etcd";
 
-    private static final String ENDPOINT_KEY_ENDPOINT_COMPLETE = "complete";
-    private static final String SEP = "/";
+    private static final String PROPERTY_ID = "wire.id";
+    private static final String PROPERTY_PROTOCOL_NAME = "wire.protocol.name";
+    private static final String PROPERTY_PROTOCOL_VERSION = "wire.protocol.version";
+    private static final String PROPERTY_ENDPOINT_NAME = "wire.name";
+    
+    private static final String PATH_SEP = "/";
+    private static final String PROP_SEP = "\n";
+    private static final String PROP_ASSIGN = "=";
 
     private final EtcdDiscoveryConfiguration m_configuration;
 
@@ -144,55 +149,16 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
         // zones
     	for (EtcdNode zoneNode : response.node.nodes) {
     		if(zoneNode.dir && zoneNode.nodes != null) {
-    			String zone = getLastPart(zoneNode.key);
-    			
+
     			// nodes
             	for (EtcdNode nodeNode : zoneNode.nodes) {
             		if(nodeNode.dir && nodeNode.nodes != null) {
-            			String node = getLastPart(nodeNode.key);
-
-            			// path
-                    	for (EtcdNode pathNode : nodeNode.nodes) {
-                    		if(pathNode.dir && pathNode.nodes != null) {
-                    			String path = getLastPart(pathNode.key);
-
-                    			// protocol
-                            	for (EtcdNode protocolNode : pathNode.nodes) {
-                            		if(protocolNode.dir && protocolNode.nodes != null) {
-	                        			String protocol = getLastPart(protocolNode.key);
-                            			
-                                		Map<String, String> properties = new HashMap<String, String>();
-                            			String complete = Boolean.FALSE.toString();
-                            			
-                            			// endpoint properties
-	                                	for (EtcdNode propertyNode : protocolNode.nodes) {
-	                                		
-	                                		String propertyKey = getLastPart(propertyNode.key);
-	                                		if (!propertyKey.equals(ENDPOINT_KEY_ENDPOINT_COMPLETE)) {
-	                                			properties.put(propertyKey, propertyNode.value);
-	                                		}
-	                                		else {
-	                                			complete = propertyNode.value;
-	                                		}
-	                                	}
-
-	                                	if (complete.equals(Boolean.TRUE.toString())) {
-	                                		logDebug("Adding %s %s %s %s", zone, node, path, protocol);
-	                                		
-	                                		WiringEndpointDescription endpointDescription = new WiringEndpointDescription();
-	                                		endpointDescription.setZone(zone);
-	                                		endpointDescription.setNode(node);
-	                                		endpointDescription.setEndpointName(path);
-	                                		String[] protocolParts = splitProtocol(protocol);
-	                                		endpointDescription.setProtocolName(protocolParts[0]);
-	                                		endpointDescription.setProtocolVersion(protocolParts[1]);
-	                                		endpointDescription.setProperties(properties);
-	                                		
-	                                		endpoints.add(endpointDescription);
-	                                	}
-                            				
-                            		}
-                            	}
+            	
+            			// wiring endpoints
+                    	for (EtcdNode endpointNode : nodeNode.nodes) {
+                    		if (endpointNode.value != null) {
+                        		WiringEndpointDescription endpoint = getEndpointFromNode(endpointNode, true);
+                        		endpoints.add(endpoint);
                     		}
                     	}
             		}
@@ -203,13 +169,6 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     	return endpoints;
     }
     
-    private String getLastPart(String s) {
-    	if (!s.contains(SEP)) {
-    		return s;
-    	}
-    	return s.substring(s.lastIndexOf(SEP) + 1);
-    }
-    
     private void handleDiscoveryNodeChange(EtcdKeysResponse response) throws Exception {
 
     	long index = 0l;
@@ -218,11 +177,9 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
             logInfo("Handling endpoint change at etcd index %s, action %s, key %s", index, response.action.toString(), response.node.key);
             
             // new node is ready on a set on the "complete" key with value "true"
-            if (response.action == EtcdKeyAction.set
-            		&& response.node.key.endsWith(SEP + ENDPOINT_KEY_ENDPOINT_COMPLETE)
-            		&& response.node.value.equals(Boolean.TRUE.toString())) {
+            if (response.action == EtcdKeyAction.set || response.action == EtcdKeyAction.update) {
 
-            	WiringEndpointDescription endpoint = getEndpointFromKey(response.node.key, true);
+            	WiringEndpointDescription endpoint = getEndpointFromNode(response.node, true);
                 addDiscoveredEndpoint(endpoint);
 
             }
@@ -230,7 +187,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
             // remove node on "delete" or "expire"
             else if ((response.action == EtcdKeyAction.delete || response.action == EtcdKeyAction.expire)) {
 
-            	WiringEndpointDescription endpoint = getEndpointFromKey(response.node.key, false);
+            	WiringEndpointDescription endpoint = getEndpointFromNode(response.node, false);
                 removeDiscoveredEndpoint(endpoint);
 
             }
@@ -243,10 +200,10 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
         }
     }
     
-    private WiringEndpointDescription getEndpointFromKey(String key, boolean doGetEndpointProperties) {
+    private WiringEndpointDescription getEndpointFromNode(EtcdNode etcdNode, boolean doGetEndpointProperties) {
 
-    	String all = key.substring(m_configuration.getRootPath().length());
-    	if (all.startsWith(SEP)) {
+    	String all = etcdNode.key.substring(m_configuration.getRootPath().length());
+    	if (all.startsWith(PATH_SEP)) {
     		all = all.substring(1);
     	}
     	
@@ -262,54 +219,40 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     	endpoint.setNode(node);
     	all = all.substring(node.length() + 1);
     	
-    	// path
-    	String path = getNextPart(all); 
-    	endpoint.setEndpointName(path);
-    	all = all.substring(path.length() + 1);
-    	
-    	// protocol
-    	String protocol = getNextPart(all);
-    	// format is currently "protocolName;version=protocolVersion"
-    	String[] protocolParts = protocol.split(";");
-    	endpoint.setProtocolName(protocolParts[0]);
-    	endpoint.setProtocolVersion(protocolParts[1].substring(protocolParts[1].indexOf("=") + 1));
-    	all = all.substring(protocol.length() + 1);
+    	// id
+    	String id = getNextPart(all); 
+    	endpoint.setId(id);
 
-    	if(doGetEndpointProperties) {
-
-    		// get other values from etcd
-    		try {
-    			
-    			String endpointKey = key.substring(0, key.lastIndexOf(SEP));
-    			EtcdNode endpointNode = m_etcd.get(endpointKey).recursive().send().get().node;
-    			
-    			// set properties
-    			for (EtcdNode propertyNode : endpointNode.nodes) {
-            		String propertyKey = getLastPart(propertyNode.key);
-            		if (!propertyKey.equals(ENDPOINT_KEY_ENDPOINT_COMPLETE)) {
-            			endpoint.setProperty(propertyKey, propertyNode.value);
-            		}
-            	}
-    			
-    		} catch (Exception e) {
-    			logError("error getting endpoint properties", e);
-    		}
-    		
+    	if(!doGetEndpointProperties) {
+    		return endpoint;
     	}
 
+    	Map<String, String> properties = parseEtcdNodeValueToProperties(etcdNode);
+    	Set<String> keySet = properties.keySet();
+    	for (String key : keySet) {
+			switch(key) {
+				case PROPERTY_PROTOCOL_NAME: endpoint.setProtocolName(properties.get(key)); break;
+				case PROPERTY_PROTOCOL_VERSION: endpoint.setProtocolVersion(properties.get(key)); break;
+				case PROPERTY_ENDPOINT_NAME: endpoint.setEndpointName(properties.get(key)); break;
+				default: endpoint.setProperty(key,properties.get(key));
+			}
+		}
+    	
     	return endpoint;
     }
     
     private String getNextPart(String s) {
-    	return s.contains(SEP) ? s.substring(0, s.indexOf(SEP)) : null;
+    	return s.contains(PATH_SEP) ? s.substring(0, s.indexOf(PATH_SEP)) : null;
     }
 
-    private String[] splitProtocol(String protocol) {
-    	String[] result = new String[2];
-    	String[] protocolParts = protocol.split(";");
-    	result[0] = protocolParts[0];
-    	result[1] = protocolParts[1].substring(protocolParts[1].indexOf("=") + 1);
-    	return result;
+    private Map<String, String> parseEtcdNodeValueToProperties(EtcdNode node) {
+    	Map<String, String> map = new HashMap<String, String>();
+    	String[] properties = node.value.split(PROP_SEP);
+    	for (String property : properties) {
+			String[] propertyParts = property.split(PROP_ASSIGN);
+			map.put(propertyParts[0], propertyParts[1]);
+		}
+    	return map;
     }
     
     private long getEtcdIndex(EtcdKeysResponse response) {
@@ -369,14 +312,10 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     	return getZonePath(endpoint) + endpoint.getNode() + "/";
     }
 
-    private String getPathPath(WiringEndpointDescription endpoint) {
-    	return getNodePath(endpoint) + endpoint.getEndpointName() + "/";
+    private String getEndpointPath(WiringEndpointDescription endpoint) {
+    	return getNodePath(endpoint) + endpoint.getId() + "/";
     }
 
-    private String getProtocolPath(WiringEndpointDescription endpoint) {
-    	return getPathPath(endpoint) + endpoint.getProtocolName() + ";version=" + endpoint.getProtocolVersion() + "/";
-    }
-    
     private class EtcdRegistrationUpdater implements Runnable {
 
         private static final int ETCD_REGISTRATION_TTL = 60;
@@ -384,9 +323,8 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
         private final ScheduledFuture<?> m_future;
 
         public EtcdRegistrationUpdater() throws Exception {
-            putPublishedEndpoints();
             m_future =
-                m_executor.scheduleAtFixedRate(this, ETCD_REGISTRATION_TTL - 5, ETCD_REGISTRATION_TTL - 5,
+                m_executor.scheduleAtFixedRate(this, 0, ETCD_REGISTRATION_TTL - 5,
                     TimeUnit.SECONDS);
         }
 
@@ -395,46 +333,40 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
         	m_lock.readLock().lock();
         	
         	for (WiringEndpointDescription endpoint : m_publishedEndpoints.values()) {
-        		putPublishedEndpoint(endpoint);
+        		putPublishedEndpoint(endpoint, false);
         	}
         	
         	m_lock.readLock().unlock();
         }
 
-		public void putPublishedEndpoint(WiringEndpointDescription endpoint) throws Exception {
+		public void putPublishedEndpoint(WiringEndpointDescription endpoint, boolean isAdded) throws Exception {
 			
-			// put protocol
-			putDir(getProtocolPath(endpoint));
+			String key = getEndpointPath(endpoint);
+			String value = getEndpointValue(endpoint);
+			
+        	m_etcd.put(key, value).prevExist(!isAdded).ttl(ETCD_REGISTRATION_TTL).send();
+        }
 
-        	// put endpoint properties
+		private String getEndpointValue(WiringEndpointDescription endpoint) {
+			
+			String value = addProperty("", PROPERTY_ID, endpoint.getId());
+			value = addProperty(value, PROPERTY_PROTOCOL_NAME, endpoint.getProtocolName());
+			value = addProperty(value, PROPERTY_PROTOCOL_VERSION, endpoint.getProtocolVersion());
+			value = addProperty(value, PROPERTY_ENDPOINT_NAME, endpoint.getEndpointName());
+			
 			Map<String, String> properties = endpoint.getProperties();
 			Set<String> keys = properties.keySet();
 			for (String key : keys) {
-	        	m_etcd.put(getProtocolPath(endpoint) + key, properties.get(key)).send().get();
+				value = addProperty(value, key, properties.get(key));
 			}
-        	
-        	// put marker that everything is written
-        	m_etcd.put(getProtocolPath(endpoint) + ENDPOINT_KEY_ENDPOINT_COMPLETE, Boolean.TRUE.toString()).send().get();
-        }
-        
-        private void putDir(String path) throws Exception {
-        	EtcdKeyPutRequest putRequest = m_etcd.putDir(path).ttl(ETCD_REGISTRATION_TTL);
-        	// putDir with ttl needs prevExist when already existing
-        	if(dirExists(path)) {
-        		putRequest.prevExist(true);
-        	}
-        	putRequest.send().get();
-        }
-
-        private boolean dirExists(String path) {
-        	try {
-				m_etcd.getDir(path).send().get();
-			} catch (Exception e) {
-				return false;
-			}
-        	return true;
-        }
-
+			
+			return value;
+		}
+		
+		private String addProperty(String s, String key, String value) {
+			return s + key + PROP_ASSIGN + value + PROP_SEP;
+		}
+		
 		@Override
         public void run() {
             try {
@@ -464,9 +396,8 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
         }
         
         public void deleteEndpoint(WiringEndpointDescription endpoint) throws Exception {
-        	m_etcd.deleteDir(getProtocolPath(endpoint)).recursive().send();
+        	m_etcd.delete(getEndpointPath(endpoint)).send();
         }
-        
         
     }
 
@@ -492,7 +423,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 		m_lock.writeLock().lock();
 		m_publishedEndpoints.put(endpoint.getId(), endpoint);
 		try {
-			m_updater.putPublishedEndpoint(endpoint);
+			m_updater.putPublishedEndpoint(endpoint, true);
 		} catch (Exception e) {
 			logError("error publishing endpoint %s", e, endpoint);
 		}
