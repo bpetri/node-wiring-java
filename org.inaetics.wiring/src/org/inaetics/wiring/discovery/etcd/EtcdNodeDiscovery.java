@@ -349,8 +349,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 
 		private String getEndpointValue(WiringEndpointDescription endpoint) {
 			
-			String value = addProperty("", PROPERTY_ID, endpoint.getId());
-			value = addProperty(value, PROPERTY_PROTOCOL_NAME, endpoint.getProtocolName());
+			String value = addProperty("", PROPERTY_PROTOCOL_NAME, endpoint.getProtocolName());
 			value = addProperty(value, PROPERTY_PROTOCOL_VERSION, endpoint.getProtocolVersion());
 			value = addProperty(value, PROPERTY_ENDPOINT_NAME, endpoint.getEndpointName());
 			
