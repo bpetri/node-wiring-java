@@ -28,16 +28,12 @@ public final class WiringEndpointImpl implements WiringEndpoint {
 	public void sendMessage(Message message) throws Throwable {
 
 		FullMessage fullMessage = new FullMessage();
-		fullMessage.setLocalZone(m_configuration.getZone());
-		fullMessage.setLocalNode(m_configuration.getNode());
-		fullMessage.setRemoteZone(m_endpoint.getZone());
-		fullMessage.setRemoteNode(m_endpoint.getNode());
-		fullMessage.setRemoteEndpointName(m_endpoint.getEndpointName());
-
-		fullMessage.setLocalEndpointName(message.getLocalEndpointName());
+		fullMessage.setFromZone(m_configuration.getZone());
+		fullMessage.setFromNode(m_configuration.getNode());
+		fullMessage.setFromEndpointName(message.getFromEndpointName());
 		fullMessage.setMessage(message.getMessage());
 		
-		m_endpointFactory.sendMessage(fullMessage);
+		m_endpointFactory.sendMessage(m_endpoint.getZone(), m_endpoint.getNode(), m_endpoint.getEndpointName(), fullMessage);
 	}
 
 }

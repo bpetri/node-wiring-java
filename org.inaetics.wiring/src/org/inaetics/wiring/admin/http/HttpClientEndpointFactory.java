@@ -44,11 +44,11 @@ public class HttpClientEndpointFactory extends AbstractComponentDelegate impleme
     	m_clients.remove(endpoint);
     }
 
-    public String sendMessage(FullMessage message) throws Throwable {
+    public String sendMessage(String zone, String node, String endpointName, FullMessage message) throws Throwable {
     	for (WiringEndpointDescription endpoint : m_clients.keySet()) {
-    		if (endpoint.getEndpointName().equals(message.getRemoteEndpointName())
-    				&& endpoint.getNode().equals(message.getRemoteNode())
-    				&& endpoint.getZone().equals(message.getRemoteZone())) {
+    		if (endpoint.getEndpointName().equals(endpointName)
+    				&& endpoint.getNode().equals(node)
+    				&& endpoint.getZone().equals(zone)) {
     			
     			HttpClientEndpoint httpClientEndpoint = m_clients.get(endpoint);
     			return httpClientEndpoint.sendMessage(message);

@@ -6,32 +6,26 @@ package org.inaetics.wiring.endpoint;
 
 public class Message {
 	
-	protected String remoteZone;
-	protected String remoteNode;
-	protected String remoteEndpointName;
-
-	private String localEndpointName;
+	protected String fromZone;
+	protected String fromNode;
+	protected String fromEndpointName;
 
 	private String message;
 	
-	public String getRemoteZone() {
-		return remoteZone;
+	public String getFromZone() {
+		return fromZone;
 	}
 
-	public String getRemoteNode() {
-		return remoteNode;
+	public String getFromNode() {
+		return fromNode;
 	}
 
-	public String getRemoteEndpointName() {
-		return remoteEndpointName;
+	public String getFromEndpointName() {
+		return fromEndpointName;
 	}
 
-	public String getLocalEndpointName() {
-		return localEndpointName;
-	}
-
-	public void setLocalEndpointName(String localEndpointName) {
-		this.localEndpointName = localEndpointName;
+	public void setFromEndpointName(String endpointName) {
+		this.fromEndpointName = endpointName;
 	}
 
 	public String getMessage() {
@@ -44,7 +38,10 @@ public class Message {
 
 	@Override
 	public String toString() {
-		return "Message [localEndpointName=" + localEndpointName + ", message=" + message + "]";
+		return "Message [fromZone=" + fromZone + ", fromNode=" + fromNode
+				+ ", fromEndpointName=" + fromEndpointName + ", message="
+				+ message + "]";
 	}
+
 	
 }

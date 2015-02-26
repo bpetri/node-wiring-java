@@ -29,7 +29,7 @@ public class EchoClient implements WiringEndpointListener {
 	public void sendMessage(String zone, String node, String endpointName, String message) {
 
 		Message messageObject = new Message();
-		messageObject.setLocalEndpointName("echoClient");
+		messageObject.setFromEndpointName("echoClient");
 		messageObject.setMessage(message);
 		
 		try {

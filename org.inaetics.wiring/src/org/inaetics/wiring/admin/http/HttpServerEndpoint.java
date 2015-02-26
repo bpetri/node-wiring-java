@@ -69,8 +69,6 @@ public final class HttpServerEndpoint {
 				return;
 			}
 			
-			switchRemoteLocal(message);
-			
 //			Exception exception = null;
 			
 			m_listener.messageReceived(message);
@@ -89,19 +87,6 @@ public final class HttpServerEndpoint {
         finally {
             IOUtil.closeSilently(in);
         }
-    }
-
-    private void switchRemoteLocal(FullMessage message) {
-    	// switch remote and local fields in message
-    	String newRemoteZone = message.getLocalZone();
-    	String newRemoteNode = message.getLocalNode();
-    	String newRemotePath = message.getLocalEndpointName();
-    	message.setLocalZone(message.getRemoteZone());
-    	message.setLocalNode(message.getRemoteNode());
-    	message.setLocalEndpointName(message.getRemoteEndpointName());
-    	message.setRemoteZone(newRemoteZone);
-    	message.setRemoteNode(newRemoteNode);
-    	message.setRemoteEndpointName(newRemotePath);
     }
 
 }
