@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.inaetics.wiring.ImportReference;
 import org.inaetics.wiring.ImportRegistration;
 import org.inaetics.wiring.WiringEndpointDescription;
-import org.inaetics.wiring.endpoint.WiringEndpoint;
+import org.inaetics.wiring.endpoint.WiringSender;
 
 /**
  * The {@link ImportedEndpointImpl} class represents an active imported endpoint for a
@@ -24,7 +24,7 @@ public final class ImportedEndpointImpl implements ImportRegistration, ImportRef
 
     private volatile WiringEndpointDescription m_endpointDescription;
     private volatile HttpClientEndpointFactory m_endpointFactory;
-    private volatile WiringEndpoint m_endpoint;
+    private volatile WiringSender m_sender;
 
     private volatile Throwable m_exception;
 
@@ -45,7 +45,7 @@ public final class ImportedEndpointImpl implements ImportRegistration, ImportRef
 
         try {
 
-        	m_endpoint = m_endpointFactory.addEndpoint(m_endpointDescription);             
+        	m_sender = m_endpointFactory.addEndpoint(m_endpointDescription);             
             
         }
         catch (Exception e) {
@@ -80,8 +80,8 @@ public final class ImportedEndpointImpl implements ImportRegistration, ImportRef
     }
 
     @Override
-	public WiringEndpoint getEndpoint() {
-        return getEndpoint(false);
+	public WiringSender getWiringSender() {
+        return getWiringSender(false);
     }
 
     @Override
@@ -96,11 +96,11 @@ public final class ImportedEndpointImpl implements ImportRegistration, ImportRef
         return m_endpointDescription;
     }
 
-    WiringEndpoint getEndpoint(boolean ignoreClosed) {
+    WiringSender getWiringSender(boolean ignoreClosed) {
         if (!ignoreClosed && m_closed.get()) {
             return null;
         }
-        return m_endpoint;
+        return m_sender;
     }
 
     Throwable getException(boolean ignoreClosed) {

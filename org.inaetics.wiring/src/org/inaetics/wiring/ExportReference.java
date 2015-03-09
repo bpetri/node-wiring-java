@@ -3,7 +3,7 @@
  */
 package org.inaetics.wiring;
 
-import org.inaetics.wiring.endpoint.WiringEndpointListener;
+import org.inaetics.wiring.endpoint.WiringReceiver;
 
 public interface ExportReference {
 	
@@ -13,7 +13,7 @@ public interface ExportReference {
 	 * @return The service being exported. Must be {@code null} when the service
 	 *         is no longer exported.
 	 */
-	WiringEndpointListener getEndpointListener();
+	WiringReceiver getWiringReceiver();
 
 	/**
 	 * Return the Endpoint Description for the local endpoint.

@@ -11,7 +11,7 @@ import org.apache.felix.dm.DependencyManager;
 import org.inaetics.wiring.WiringEndpointEventListener;
 import org.inaetics.wiring.WiringAdmin;
 import org.inaetics.wiring.WiringAdminListener;
-import org.inaetics.wiring.endpoint.WiringEndpointListener;
+import org.inaetics.wiring.endpoint.WiringReceiver;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.service.cm.ManagedService;
@@ -46,8 +46,8 @@ public class Activator extends DependencyActivatorBase {
                     .setCallbacks("wiringAdminAdded", "wiringAdminRemoved")
                     .setRequired(false))
                 .add(createServiceDependency()
-                    .setService(WiringEndpointListener.class)
-                    .setCallbacks("endpointListenerAdded", "endpointListenerModified", "endpointListenerRemoved")
+                    .setService(WiringReceiver.class)
+                    .setCallbacks("wiringReceiverAdded", "wiringReceiverRemoved")
                     .setRequired(false))
                 .add(createServiceDependency()
                     .setService(WiringEndpointEventListener.class)

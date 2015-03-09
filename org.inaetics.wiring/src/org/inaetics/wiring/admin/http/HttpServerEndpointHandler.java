@@ -22,7 +22,7 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.inaetics.wiring.WiringEndpointDescription;
 import org.inaetics.wiring.base.AbstractComponentDelegate;
-import org.inaetics.wiring.endpoint.WiringEndpointListener;
+import org.inaetics.wiring.endpoint.WiringReceiver;
 
 /**
  * Wiring component that handles all server endpoints.
@@ -70,11 +70,11 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
      * Add a Server Endpoint.
      * 
      * @param endpoint The Endpoint Description
-     * @param listener 
+     * @param receiver The Wiring Receiver
      */
-    public HttpServerEndpoint addEndpoint(WiringEndpointDescription endpoint, WiringEndpointListener listener) {
+    public HttpServerEndpoint addEndpoint(WiringEndpointDescription endpoint, WiringReceiver receiver) {
 
-        HttpServerEndpoint serverEndpoint = new HttpServerEndpoint(endpoint, listener);
+        HttpServerEndpoint serverEndpoint = new HttpServerEndpoint(endpoint, receiver);
 
         m_lock.writeLock().lock();
         try {

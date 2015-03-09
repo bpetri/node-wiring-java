@@ -30,14 +30,14 @@ public class HttpClientEndpointFactory extends AbstractComponentDelegate impleme
         m_configuration = configuration;
     }
 
-    public WiringEndpointImpl addEndpoint(WiringEndpointDescription endpoint) {
+    public WiringSenderImpl addEndpoint(WiringEndpointDescription endpoint) {
     	HttpClientEndpoint client = m_clients.get(endpoint);
     	if (client == null) {
     		client = new HttpClientEndpoint(endpoint, m_configuration);
     		m_clients.put(endpoint, client);
     		client.setProblemListener(this);
     	}
-		return new WiringEndpointImpl(this, m_configuration, endpoint);
+		return new WiringSenderImpl(this, m_configuration, endpoint);
     }
     
     public void removeEndpoint(WiringEndpointDescription endpoint) {

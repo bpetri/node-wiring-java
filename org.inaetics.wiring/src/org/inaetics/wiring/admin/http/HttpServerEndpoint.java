@@ -19,7 +19,7 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.inaetics.wiring.WiringEndpointDescription;
 import org.inaetics.wiring.base.IOUtil;
-import org.inaetics.wiring.endpoint.WiringEndpointListener;
+import org.inaetics.wiring.endpoint.WiringReceiver;
 
 /**
  * Servlet that represents a local wiring endpoint.
@@ -34,12 +34,12 @@ public final class HttpServerEndpoint {
     private final JsonFactory m_jsonFactory = new JsonFactory(m_objectMapper);
 
     private WiringEndpointDescription m_endpoint;
-    private WiringEndpointListener m_listener;
+    private WiringReceiver m_receiver;
     private ServerEndpointProblemListener m_problemListener;
 
-    public HttpServerEndpoint(WiringEndpointDescription endpoint, WiringEndpointListener listener) {
+    public HttpServerEndpoint(WiringEndpointDescription endpoint, WiringReceiver receiver) {
     	m_endpoint = endpoint;
-    	m_listener = listener;
+    	m_receiver = receiver;
     }
 
     /**
@@ -71,7 +71,7 @@ public final class HttpServerEndpoint {
 			
 //			Exception exception = null;
 			
-			m_listener.messageReceived(message);
+			m_receiver.messageReceived(message);
 			
             resp.setStatus(SC_OK);
             resp.setContentType(APPLICATION_JSON);

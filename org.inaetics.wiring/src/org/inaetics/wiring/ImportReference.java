@@ -3,7 +3,7 @@
  */
 package org.inaetics.wiring;
 
-import org.inaetics.wiring.endpoint.WiringEndpoint;
+import org.inaetics.wiring.endpoint.WiringSender;
 
 public interface ImportReference {
 
@@ -13,7 +13,7 @@ public interface ImportReference {
 	 * @return The Service for the endpoint. Must be
 	 *         {@code null} when the service is no longer imported.
 	 */
-	WiringEndpoint getEndpoint();
+	WiringSender getWiringSender();
 
 	/**
 	 * Return the Endpoint Description for the remote endpoint.

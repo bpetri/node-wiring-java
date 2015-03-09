@@ -3,7 +3,7 @@
  */
 package org.inaetics.wiring;
 
-import org.inaetics.wiring.endpoint.WiringEndpointListener;
+import org.inaetics.wiring.endpoint.WiringReceiver;
 
 /**
  * A Wiring Admin manages the import and export of services.
@@ -16,7 +16,7 @@ public interface WiringAdmin {
 	/**
 	 * Export an Endpoint.
 	 */
-	public ExportRegistration exportEndpoint(WiringEndpointListener listener, String serviceId);
+	public ExportRegistration exportEndpoint(WiringReceiver listener, String serviceId);
 
 	/**
 	 * Import an Endpoint.

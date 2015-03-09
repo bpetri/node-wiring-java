@@ -11,7 +11,7 @@ import org.inaetics.wiring.ImportRegistration;
 import org.inaetics.wiring.WiringEndpointDescription;
 import org.inaetics.wiring.WiringAdmin;
 import org.inaetics.wiring.base.AbstractComponentDelegate;
-import org.inaetics.wiring.endpoint.WiringEndpointListener;
+import org.inaetics.wiring.endpoint.WiringReceiver;
 
 /**
  * Wiring Admin instance implementation.
@@ -54,7 +54,7 @@ public final class WiringAdminImpl extends AbstractComponentDelegate implements 
     }
 
 	@Override
-	public ExportRegistration exportEndpoint(WiringEndpointListener listener, String serviceId) {
+	public ExportRegistration exportEndpoint(WiringReceiver listener, String serviceId) {
 		ExportedEndpointImpl endpointImpl = new ExportedEndpointImpl(m_manager.getServerEndpointHandler(), listener, serviceId, m_configuration);
 		m_exportedEndpoints.add(endpointImpl);
 		return endpointImpl;

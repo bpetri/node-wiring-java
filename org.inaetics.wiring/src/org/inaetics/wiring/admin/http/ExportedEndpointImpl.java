@@ -11,7 +11,7 @@ import org.inaetics.wiring.ExportReference;
 import org.inaetics.wiring.ExportRegistration;
 import org.inaetics.wiring.WiringEndpointDescription;
 import org.inaetics.wiring.endpoint.WiringConstants;
-import org.inaetics.wiring.endpoint.WiringEndpointListener;
+import org.inaetics.wiring.endpoint.WiringReceiver;
 
 /**
  * The {@link ExportedEndpointImpl} class represents an active exported endpoint for a
@@ -27,7 +27,7 @@ public final class ExportedEndpointImpl implements ExportRegistration, ExportRef
     private final HttpServerEndpointHandler m_endpointHandler;
 
     private volatile WiringEndpointDescription m_endpointDescription;
-    private volatile WiringEndpointListener m_endpoint;
+    private volatile WiringReceiver m_receiver;
     private volatile Throwable m_exception;
 	private volatile HttpAdminConfiguration m_configuration;
 
@@ -41,11 +41,11 @@ public final class ExportedEndpointImpl implements ExportRegistration, ExportRef
      * @param reference the service reference
      * @param properties the export properties
      */
-    public ExportedEndpointImpl(HttpServerEndpointHandler endpointHandler, WiringEndpointListener endpoint,
+    public ExportedEndpointImpl(HttpServerEndpointHandler endpointHandler, WiringReceiver receiver,
     		String endpointName, HttpAdminConfiguration configuration) {
 
         m_endpointHandler = endpointHandler;
-        m_endpoint = endpoint;
+        m_receiver = receiver;
         m_configuration = configuration;
 
         try {
@@ -68,7 +68,7 @@ public final class ExportedEndpointImpl implements ExportRegistration, ExportRef
     		}
     		
     		// create http handler
-    		m_endpointHandler.addEndpoint(m_endpointDescription, m_endpoint);
+    		m_endpointHandler.addEndpoint(m_endpointDescription, m_receiver);
         	
         }
         catch (Exception e) {
@@ -105,8 +105,8 @@ public final class ExportedEndpointImpl implements ExportRegistration, ExportRef
     }
 
     @Override
-    public WiringEndpointListener getEndpointListener() {
-        return getEndpointListener(false);
+    public WiringReceiver getWiringReceiver() {
+        return getWiringReceiver(false);
     }
 
     @Override
@@ -121,11 +121,11 @@ public final class ExportedEndpointImpl implements ExportRegistration, ExportRef
         return m_endpointDescription;
     }
 
-    WiringEndpointListener getEndpointListener(boolean ignoreClosed) {
+    WiringReceiver getWiringReceiver(boolean ignoreClosed) {
         if (!ignoreClosed && m_closed.get()) {
             return null;
         }
-        return m_endpoint;
+        return m_receiver;
     }
 
     Throwable getException(boolean ignoreClosed) {

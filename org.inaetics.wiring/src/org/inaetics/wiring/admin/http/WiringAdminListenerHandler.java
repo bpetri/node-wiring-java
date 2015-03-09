@@ -10,12 +10,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.inaetics.wiring.WiringEndpointDescription;
 import org.inaetics.wiring.base.AbstractComponentDelegate;
-import org.inaetics.wiring.endpoint.WiringEndpointListener;
+import org.inaetics.wiring.endpoint.WiringReceiver;
 
 public class WiringAdminListenerHandler extends AbstractComponentDelegate {
 
-	private final Map<WiringEndpointListener, WiringEndpointDescription> m_wiringAdminListeners =
-			new ConcurrentHashMap<WiringEndpointListener, WiringEndpointDescription>();
+	private final Map<WiringReceiver, WiringEndpointDescription> m_wiringAdminListeners =
+			new ConcurrentHashMap<WiringReceiver, WiringEndpointDescription>();
 
     private final WiringAdminFactory m_manager;
     private final HttpAdminConfiguration m_configuration;
@@ -28,12 +28,12 @@ public class WiringAdminListenerHandler extends AbstractComponentDelegate {
         m_serverEndpointHandler = serverEndpointHandler;
 	}
 	
-	protected final WiringEndpointDescription addWiringAdminListener(WiringEndpointListener listener, String serviceId) {
+	protected final WiringEndpointDescription addWiringAdminListener(WiringReceiver listener, String serviceId) {
 
-		logDebug("Adding WiringEndpointListener %s for %s", listener, serviceId);
+		logDebug("Adding WiringReceiver %s for %s", listener, serviceId);
 
 		if (serviceId == null) {
-			logError("Adding WiringEndpointListener failed, no service id property found %s", listener);
+			logError("Adding WiringReceiver failed, no service id property found %s", listener);
 			return null;
 		}
 		
@@ -56,15 +56,15 @@ public class WiringAdminListenerHandler extends AbstractComponentDelegate {
 		
 		m_wiringAdminListeners.put(listener, endpoint);
 
-		logDebug("WiringEndpointListener added %s", listener);
+		logDebug("WiringReceiver added %s", listener);
 
 		return endpoint;
 	}
 
 	// Dependency Manager callback method
-	protected final void wiringAdminListenerRemoved(WiringEndpointListener listener) {
+	protected final void wiringAdminListenerRemoved(WiringReceiver listener) {
 		
-		logDebug("Removing WiringEndpointListener %s", listener);
+		logDebug("Removing WiringReceiver %s", listener);
 
 		// remove http handler
 		WiringEndpointDescription endpoint = m_wiringAdminListeners.get(listener);
@@ -72,7 +72,7 @@ public class WiringAdminListenerHandler extends AbstractComponentDelegate {
 		
 		m_wiringAdminListeners.remove(listener);
 		
-		logDebug("WiringEndpointListener removed %s", listener);
+		logDebug("WiringReceiver removed %s", listener);
 	}
 
 }

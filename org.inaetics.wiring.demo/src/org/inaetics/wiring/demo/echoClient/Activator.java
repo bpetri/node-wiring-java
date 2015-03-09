@@ -11,7 +11,7 @@ import org.apache.felix.dm.DependencyActivatorBase;
 import org.apache.felix.dm.DependencyManager;
 import org.apache.felix.service.command.CommandProcessor;
 import org.inaetics.wiring.endpoint.WiringConstants;
-import org.inaetics.wiring.endpoint.WiringEndpointListener;
+import org.inaetics.wiring.endpoint.WiringReceiver;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
@@ -29,7 +29,7 @@ public class Activator extends DependencyActivatorBase {
 		properties.put(CommandProcessor.COMMAND_FUNCTION, new String[]{"sendMessage", "tm"});
 		
 		m_component = createComponent()
-			.setInterface(WiringEndpointListener.class.getName(), properties)
+			.setInterface(WiringReceiver.class.getName(), properties)
 			.setImplementation(EchoClient.class)
 			.add(createServiceDependency().setService(LogService.class).setRequired(false));
 		

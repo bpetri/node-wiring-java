@@ -3,8 +3,9 @@
  */
 package org.inaetics.wiring.endpoint;
 
-public interface WiringEndpointListener {
 
-	public void messageReceived(Message message);
+public interface WiringSender {
+
+	public void sendMessage(Message message) throws Throwable;
 	
 }

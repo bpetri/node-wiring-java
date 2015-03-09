@@ -5,12 +5,12 @@ package org.inaetics.wiring.demo.echoService;
 
 import org.inaetics.wiring.demo.Util;
 import org.inaetics.wiring.endpoint.Message;
-import org.inaetics.wiring.endpoint.WiringEndpoint;
-import org.inaetics.wiring.endpoint.WiringEndpointListener;
+import org.inaetics.wiring.endpoint.WiringSender;
+import org.inaetics.wiring.endpoint.WiringReceiver;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
-public class EchoService implements WiringEndpointListener {
+public class EchoService implements WiringReceiver {
 
 	private volatile LogService m_logService;
 	private volatile BundleContext m_context;
@@ -23,15 +23,15 @@ public class EchoService implements WiringEndpointListener {
 		
 		try {
 
-			WiringEndpoint wiringEndpoint = Util.getWiringEndpoint(m_context,
+			WiringSender wiringSender = Util.getWiringSender(m_context,
 					message.getFromZone(), message.getFromNode(), message.getFromEndpointName());
 			
-			if (wiringEndpoint == null) {
+			if (wiringSender == null) {
 				m_logService.log(LogService.LOG_ERROR, "endpoint not found for message %s" + message);
 			}
 			else {
 				message.setFromEndpointName("echoService");
-				wiringEndpoint.sendMessage(message);
+				wiringSender.sendMessage(message);
 			}
 			
 		} catch (Throwable e) {
