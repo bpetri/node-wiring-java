@@ -8,6 +8,7 @@ import static javax.servlet.http.HttpServletResponse.SC_OK;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -68,19 +69,27 @@ public final class HttpServerEndpoint {
 				resp.sendError(SC_BAD_REQUEST);
 				return;
 			}
-			
-//			Exception exception = null;
-			
-			m_receiver.messageReceived(message);
-			
+
+			String result = null;
+			Exception exception = null;
+            try {
+    			result = m_receiver.messageReceived(message);
+            }
+            catch (Exception e) {
+                exception = e;
+            }
+
             resp.setStatus(SC_OK);
             resp.setContentType(APPLICATION_JSON);
-
+            
             JsonGenerator gen = m_jsonFactory.createJsonGenerator(resp.getOutputStream());
             gen.writeStartObject();
-//            if (exception != null) {
-//                gen.writeObjectField("e", new ExceptionWrapper(unwrapException(exception)));
-//            }
+            if (exception != null) {
+                gen.writeObjectField("e", new ExceptionWrapper(unwrapException(exception)));
+            }
+            else {
+                gen.writeObjectField("r", result);
+            }
             gen.close();
 
         }
@@ -89,4 +98,17 @@ public final class HttpServerEndpoint {
         }
     }
 
+    /**
+     * Unwraps a given {@link Exception} into a more concrete exception if it represents an {@link InvocationTargetException}.
+     * 
+     * @param e the exception to unwrap, should not be <code>null</code>.
+     * @return the (unwrapped) throwable or exception, never <code>null</code>.
+     */
+    private static Throwable unwrapException(Exception e) {
+        if (e instanceof InvocationTargetException) {
+            return ((InvocationTargetException) e).getTargetException();
+        }
+        return e;
+    }
+    
 }

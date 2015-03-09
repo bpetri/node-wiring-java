@@ -6,6 +6,6 @@ package org.inaetics.wiring.endpoint;
 
 public interface WiringSender {
 
-	public void sendMessage(Message message) throws Throwable;
+	public String sendMessage(Message message) throws Throwable;
 	
 }

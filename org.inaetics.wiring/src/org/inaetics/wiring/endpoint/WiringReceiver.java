@@ -5,6 +5,6 @@ package org.inaetics.wiring.endpoint;
 
 public interface WiringReceiver {
 
-	public void messageReceived(Message message);
+	public String messageReceived(Message message);
 	
 }

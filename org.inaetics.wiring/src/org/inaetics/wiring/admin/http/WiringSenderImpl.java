@@ -25,7 +25,7 @@ public final class WiringSenderImpl implements WiringSender {
     }
 
 	@Override
-	public void sendMessage(Message message) throws Throwable {
+	public String sendMessage(Message message) throws Throwable {
 
 		FullMessage fullMessage = new FullMessage();
 		fullMessage.setFromZone(m_configuration.getZone());
@@ -33,7 +33,7 @@ public final class WiringSenderImpl implements WiringSender {
 		fullMessage.setFromEndpointName(message.getFromEndpointName());
 		fullMessage.setMessage(message.getMessage());
 		
-		m_endpointFactory.sendMessage(m_endpoint.getZone(), m_endpoint.getNode(), m_endpoint.getEndpointName(), fullMessage);
+		return m_endpointFactory.sendMessage(m_endpoint.getZone(), m_endpoint.getNode(), m_endpoint.getEndpointName(), fullMessage);
 	}
 
 }
