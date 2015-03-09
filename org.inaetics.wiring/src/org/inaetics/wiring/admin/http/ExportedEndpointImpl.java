@@ -42,7 +42,7 @@ public final class ExportedEndpointImpl implements ExportRegistration, ExportRef
      * @param properties the export properties
      */
     public ExportedEndpointImpl(HttpServerEndpointHandler endpointHandler, WiringReceiver receiver,
-    		String endpointName, HttpAdminConfiguration configuration) {
+    		HttpAdminConfiguration configuration) {
 
         m_endpointHandler = endpointHandler;
         m_receiver = receiver;
@@ -54,14 +54,13 @@ public final class ExportedEndpointImpl implements ExportRegistration, ExportRef
     		m_endpointDescription = new WiringEndpointDescription();
     		m_endpointDescription.setZone(m_configuration.getZone());
     		m_endpointDescription.setNode(m_configuration.getNode());
-    		m_endpointDescription.setEndpointName(endpointName);
     		m_endpointDescription.setProtocolName(HttpAdminConstants.PROTOCOL_NAME);
     		m_endpointDescription.setProtocolVersion(HttpAdminConstants.PROTOCOL_VERSION);
     		
     		m_endpointDescription.setProperty(WiringConstants.PROPERTY_SECURE, HttpAdminConstants.SECURE);
     		
     		try {
-    			m_endpointDescription.setProperty(HttpWiringEndpointProperties.URL, new URL(m_configuration.getBaseUrl().toString() + endpointName).toString());
+    			m_endpointDescription.setProperty(HttpWiringEndpointProperties.URL, new URL(m_configuration.getBaseUrl().toString() + m_endpointDescription.getId()).toString());
     		} catch (MalformedURLException e) {
     			m_exception = e;
     			return;

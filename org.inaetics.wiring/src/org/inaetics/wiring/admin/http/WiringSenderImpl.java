@@ -4,7 +4,6 @@
 package org.inaetics.wiring.admin.http;
 
 import org.inaetics.wiring.WiringEndpointDescription;
-import org.inaetics.wiring.endpoint.Message;
 import org.inaetics.wiring.endpoint.WiringSender;
 
 /**
@@ -25,15 +24,9 @@ public final class WiringSenderImpl implements WiringSender {
     }
 
 	@Override
-	public String sendMessage(Message message) throws Throwable {
+	public String sendMessage(String message) throws Throwable {
 
-		FullMessage fullMessage = new FullMessage();
-		fullMessage.setFromZone(m_configuration.getZone());
-		fullMessage.setFromNode(m_configuration.getNode());
-		fullMessage.setFromEndpointName(message.getFromEndpointName());
-		fullMessage.setMessage(message.getMessage());
-		
-		return m_endpointFactory.sendMessage(m_endpoint.getZone(), m_endpoint.getNode(), m_endpoint.getEndpointName(), fullMessage);
+		return m_endpointFactory.sendMessage(m_endpoint.getId(), message);
 	}
 
 }

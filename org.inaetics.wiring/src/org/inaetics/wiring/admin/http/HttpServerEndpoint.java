@@ -62,9 +62,9 @@ public final class HttpServerEndpoint {
                 return;
             }
 
-			FullMessage message;
+			String message;
 			try {
-				message = m_objectMapper.readValue(tree, FullMessage.class);
+				message = m_objectMapper.readValue(tree, String.class);
 			} catch (Exception e) {
 				resp.sendError(SC_BAD_REQUEST);
 				return;

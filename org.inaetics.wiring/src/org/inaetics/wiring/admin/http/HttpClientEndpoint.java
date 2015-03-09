@@ -79,7 +79,7 @@ public final class HttpClientEndpoint {
      * @return the result of the method invocation, can be <code>null</code>.
      * @throws Exception in case the invocation failed in some way.
      */
-    String sendMessage(FullMessage message) throws Throwable {
+    String sendMessage(String message) throws Throwable {
 
         HttpURLConnection connection = null;
         OutputStream outputStream = null;
@@ -152,7 +152,7 @@ public final class HttpClientEndpoint {
      * @param arguments the arguments
      * @throws IOException if a write operation fails
      */
-    private void writeMessageJSON(OutputStream out, FullMessage message) throws IOException {
+    private void writeMessageJSON(OutputStream out, String message) throws IOException {
         JsonGenerator gen = m_JsonFactory.createJsonGenerator(out);
         gen.writeObject(message);
         gen.flush();

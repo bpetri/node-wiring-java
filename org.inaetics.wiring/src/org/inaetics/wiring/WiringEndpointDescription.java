@@ -16,7 +16,6 @@ public class WiringEndpointDescription {
 	private String m_id;
 	private String m_zone;
 	private String m_node;
-	private String m_endpointName;
 	private String m_protocolName;
 	private String m_protocolVersion;
 	private volatile Map<String, String> m_properties = new ConcurrentHashMap<String, String>();
@@ -55,14 +54,6 @@ public class WiringEndpointDescription {
 		this.m_node = node;
 	}
 
-	public String getEndpointName() {
-		return m_endpointName;
-	}
-
-	public void setEndpointName(String endpointName) {
-		this.m_endpointName = endpointName;
-	}
-
 	public String getProtocolName() {
 		return m_protocolName;
 	}
@@ -95,25 +86,12 @@ public class WiringEndpointDescription {
 		m_properties.clear();
 		m_properties.putAll(properties);
 	}
-	
-	
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((m_endpointName == null) ? 0 : m_endpointName.hashCode());
-		result = prime * result + ((m_node == null) ? 0 : m_node.hashCode());
-		result = prime * result
-				+ ((m_properties == null) ? 0 : m_properties.hashCode());
-		result = prime * result
-				+ ((m_protocolName == null) ? 0 : m_protocolName.hashCode());
-		result = prime
-				* result
-				+ ((m_protocolVersion == null) ? 0 : m_protocolVersion
-						.hashCode());
-		result = prime * result + ((m_zone == null) ? 0 : m_zone.hashCode());
+		result = prime * result + ((m_id == null) ? 0 : m_id.hashCode());
 		return result;
 	}
 
@@ -126,35 +104,10 @@ public class WiringEndpointDescription {
 		if (getClass() != obj.getClass())
 			return false;
 		WiringEndpointDescription other = (WiringEndpointDescription) obj;
-		if (m_endpointName == null) {
-			if (other.m_endpointName != null)
+		if (m_id == null) {
+			if (other.m_id != null)
 				return false;
-		} else if (!m_endpointName.equals(other.m_endpointName))
-			return false;
-		if (m_node == null) {
-			if (other.m_node != null)
-				return false;
-		} else if (!m_node.equals(other.m_node))
-			return false;
-		if (m_properties == null) {
-			if (other.m_properties != null)
-				return false;
-		} else if (!m_properties.equals(other.m_properties))
-			return false;
-		if (m_protocolName == null) {
-			if (other.m_protocolName != null)
-				return false;
-		} else if (!m_protocolName.equals(other.m_protocolName))
-			return false;
-		if (m_protocolVersion == null) {
-			if (other.m_protocolVersion != null)
-				return false;
-		} else if (!m_protocolVersion.equals(other.m_protocolVersion))
-			return false;
-		if (m_zone == null) {
-			if (other.m_zone != null)
-				return false;
-		} else if (!m_zone.equals(other.m_zone))
+		} else if (!m_id.equals(other.m_id))
 			return false;
 		return true;
 	}
@@ -162,7 +115,9 @@ public class WiringEndpointDescription {
 	@Override
 	public String toString() {
 		return "WiringEndpointDescription [m_zone=" + m_zone + ", m_node="
-				+ m_node + ", m_protocol=" + m_protocolName + ";" + m_protocolVersion + ", m_endpoint=" + m_endpointName + "]";
+				+ m_node + ", m_id=" + m_id + ", m_protocolName="
+				+ m_protocolName + ", m_protocolVersion=" + m_protocolVersion
+				+ ", m_properties=" + m_properties + "]";
 	}
 		
 }

@@ -18,7 +18,7 @@ public interface WiringConstants {
 	/**
 	 * the name of the endpoint 
 	 */
-	public static final String PROPERTY_ENDPOINT_NAME = "inaetics.wiring.endpointname";
+	public static final String PROPERTY_WIRE_ID = "inaetics.wiring.id";
 	
 	/**
 	 * the security level of the wire. Possible values: "yes", "no" 

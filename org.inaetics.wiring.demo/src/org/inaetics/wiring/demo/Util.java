@@ -14,13 +14,11 @@ import org.osgi.framework.ServiceReference;
 
 public class Util {
 	
-	public static WiringSender getWiringSender(BundleContext context, String remoteZone, String remoteNode, String remoteEndpointName) throws InvalidSyntaxException {
+	public static WiringSender getWiringSender(BundleContext context, String wireId) throws InvalidSyntaxException {
 
 		String filterString = "(&";
 		filterString += "(" + Constants.OBJECTCLASS + "=" + WiringSender.class.getName() + ")";
-		filterString += "(" + WiringConstants.PROPERTY_ZONE_ID + "=" + remoteZone + ")";
-		filterString += "(" + WiringConstants.PROPERTY_NODE_ID + "=" + remoteNode + ")";
-		filterString += "(" + WiringConstants.PROPERTY_ENDPOINT_NAME + "=" + remoteEndpointName + ")";
+		filterString += "(" + WiringConstants.PROPERTY_WIRE_ID + "=" + wireId + ")";
 		filterString += ")";
 		
 		Collection<ServiceReference<WiringSender>> senderReferences = context.getServiceReferences(WiringSender.class, filterString);

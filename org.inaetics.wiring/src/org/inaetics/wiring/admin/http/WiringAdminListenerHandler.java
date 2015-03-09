@@ -41,7 +41,6 @@ public class WiringAdminListenerHandler extends AbstractComponentDelegate {
 		WiringEndpointDescription endpoint = new WiringEndpointDescription();
 		endpoint.setZone(m_configuration.getZone());
 		endpoint.setNode(m_configuration.getNode());
-		endpoint.setEndpointName(serviceId);
 		endpoint.setProtocolName(HttpAdminConstants.PROTOCOL_NAME);
 		endpoint.setProtocolVersion(HttpAdminConstants.PROTOCOL_VERSION);
 		

@@ -31,8 +31,8 @@ import org.inaetics.wiring.endpoint.WiringReceiver;
  */
 public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
 
-    private final Map<WiringEndpointDescription, HttpServerEndpoint> m_handlers =
-    		new HashMap<WiringEndpointDescription, HttpServerEndpoint>();
+    private final Map<String, HttpServerEndpoint> m_handlers =
+    		new HashMap<String, HttpServerEndpoint>();
     
     private final ReentrantReadWriteLock m_lock = new ReentrantReadWriteLock();
 
@@ -78,7 +78,7 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
 
         m_lock.writeLock().lock();
         try {
-            m_handlers.put(endpoint, serverEndpoint);
+            m_handlers.put(endpoint.getId(), serverEndpoint);
         }
         finally {
             m_lock.writeLock().unlock();
@@ -107,12 +107,7 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
     private HttpServerEndpoint getHandler(String path) {
         m_lock.readLock().lock();
         try {
-        	for (WiringEndpointDescription endpoint : m_handlers.keySet()) {
-        		if (endpoint.getEndpointName().equals(path)) {
-        			return m_handlers.get(endpoint);
-        		}
-        	}
-        	return null;
+        	return m_handlers.get(path);
         }
         finally {
             m_lock.readLock().unlock();
@@ -147,8 +142,8 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
 
         m_lock.readLock().lock();
         try {
-            for (WiringEndpointDescription endpoint : m_handlers.keySet()) {
-                gen.writeString(endpoint.getEndpointName());
+            for (String wireId : m_handlers.keySet()) {
+                gen.writeString(wireId);
             }
         }
         finally {

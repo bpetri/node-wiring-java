@@ -16,7 +16,7 @@ public interface WiringAdmin {
 	/**
 	 * Export an Endpoint.
 	 */
-	public ExportRegistration exportEndpoint(WiringReceiver listener, String serviceId);
+	public ExportRegistration exportEndpoint(WiringReceiver listener);
 
 	/**
 	 * Import an Endpoint.

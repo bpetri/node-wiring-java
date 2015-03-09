@@ -54,8 +54,8 @@ public final class WiringAdminImpl extends AbstractComponentDelegate implements 
     }
 
 	@Override
-	public ExportRegistration exportEndpoint(WiringReceiver listener, String serviceId) {
-		ExportedEndpointImpl endpointImpl = new ExportedEndpointImpl(m_manager.getServerEndpointHandler(), listener, serviceId, m_configuration);
+	public ExportRegistration exportEndpoint(WiringReceiver listener) {
+		ExportedEndpointImpl endpointImpl = new ExportedEndpointImpl(m_manager.getServerEndpointHandler(), listener, m_configuration);
 		m_exportedEndpoints.add(endpointImpl);
 		return endpointImpl;
 	}

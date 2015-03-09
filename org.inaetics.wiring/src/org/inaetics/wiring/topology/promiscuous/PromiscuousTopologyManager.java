@@ -5,28 +5,28 @@ package org.inaetics.wiring.topology.promiscuous;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.inaetics.wiring.ExportRegistration;
 import org.inaetics.wiring.ImportReference;
 import org.inaetics.wiring.ImportRegistration;
-import org.inaetics.wiring.WiringEndpointDescription;
-import org.inaetics.wiring.WiringEndpointEvent;
-import org.inaetics.wiring.WiringEndpointEventListener;
 import org.inaetics.wiring.WiringAdmin;
 import org.inaetics.wiring.WiringAdminEvent;
 import org.inaetics.wiring.WiringAdminListener;
+import org.inaetics.wiring.WiringEndpointDescription;
+import org.inaetics.wiring.WiringEndpointEvent;
+import org.inaetics.wiring.WiringEndpointEventListener;
 import org.inaetics.wiring.base.AbstractWiringEndpointPublishingComponent;
 import org.inaetics.wiring.endpoint.WiringConstants;
-import org.inaetics.wiring.endpoint.WiringSender;
 import org.inaetics.wiring.endpoint.WiringReceiver;
+import org.inaetics.wiring.endpoint.WiringSender;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
@@ -44,7 +44,7 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 
     public final static String SERVICE_PID = "org.amdatu.remote.topology.promiscuous";
 
-    private final Map<WiringReceiver, String> m_exportableReceivers = new HashMap<WiringReceiver, String>();
+    private final Set<WiringReceiver> m_exportableReceivers = Collections.newSetFromMap(new HashMap<WiringReceiver, Boolean>());
     private final Map<WiringReceiver, Map<WiringAdmin, ExportRegistration>> m_exportedReceivers =
             new HashMap<WiringReceiver, Map<WiringAdmin, ExportRegistration>>();
 
@@ -84,19 +84,15 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
     }
     
     // Dependency Manager callback method
-    public void wiringReceiverAdded(ServiceReference<WiringReceiver> reference, WiringReceiver listener) {
-    	String name = (String) reference.getProperty(WiringConstants.PROPERTY_ENDPOINT_NAME);
-    	if (name == null) {
-    		logError("missing name property, will not export %s", listener);
-    		return;
-    	}
-    	exportEndpoints(listener, name);
+    public void wiringReceiverAdded(ServiceReference<WiringReceiver> reference, WiringReceiver receiver) {
+    	m_exportableReceivers.add(receiver);
+    	exportEndpoints(receiver);
     }
 
     // Dependency Manager callback method
-    public void wiringReceiverRemoved(ServiceReference<WiringReceiver> reference, WiringReceiver listener) {
-    	m_exportableReceivers.remove(listener);
-    	unExportEndpoints(listener);
+    public void wiringReceiverRemoved(ServiceReference<WiringReceiver> reference, WiringReceiver receiver) {
+    	m_exportableReceivers.remove(receiver);
+    	unExportEndpoints(receiver);
     }
     
 	@Override
@@ -119,28 +115,25 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 	}
 
 	private void exportEndpoints(WiringAdmin admin) {
-    	Set<Entry<WiringReceiver, String>> exportableSet = m_exportableReceivers.entrySet();
-    	for (Entry<WiringReceiver, String> entry : exportableSet) {
-    		exportEndpoint(admin, entry.getKey(), entry.getValue());
-		}		
+		for (WiringReceiver wiringReceiver : m_exportableReceivers) {
+    		exportEndpoint(admin, wiringReceiver);
+		}
 	}
 	
-	private void exportEndpoints(WiringReceiver listener, String serviceId) {
+	private void exportEndpoints(WiringReceiver listener) {
 		for (WiringAdmin admin : m_wiringAdmins) {
-			exportEndpoint(admin, listener, serviceId);
+			exportEndpoint(admin, listener);
 		}
 	}
 
-	private void exportEndpoint(WiringAdmin admin, WiringReceiver listener, String serviceId) {
-		
-    	m_exportableReceivers.put(listener, serviceId);
+	private void exportEndpoint(WiringAdmin admin, WiringReceiver receiver) {
 
-		// export wiring listeners
-		ExportRegistration exportRegistration = admin.exportEndpoint(listener, serviceId);
-		Map<WiringAdmin, ExportRegistration> adminMap = m_exportedReceivers.get(listener);
+		// export wiring receiver
+		ExportRegistration exportRegistration = admin.exportEndpoint(receiver);
+		Map<WiringAdmin, ExportRegistration> adminMap = m_exportedReceivers.get(receiver);
 		if (adminMap == null) {
 			adminMap = new HashMap<WiringAdmin, ExportRegistration>();
-			m_exportedReceivers.put(listener, adminMap);
+			m_exportedReceivers.put(receiver, adminMap);
 		}
 		adminMap.put(admin, exportRegistration);
 		
@@ -186,7 +179,7 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 		Dictionary<String, Object> properties = new Hashtable<String, Object>();
         properties.put(WiringConstants.PROPERTY_ZONE_ID, endpointDescription.getZone());
         properties.put(WiringConstants.PROPERTY_NODE_ID, endpointDescription.getNode());
-        properties.put(WiringConstants.PROPERTY_ENDPOINT_NAME, endpointDescription.getEndpointName());
+        properties.put(WiringConstants.PROPERTY_WIRE_ID, endpointDescription.getId());
         properties.put(WiringConstants.PROPERTY_SECURE, endpointDescription.getProperty(WiringConstants.PROPERTY_SECURE));
     		
         ServiceRegistration<WiringSender> serviceRegistration = m_context.registerService(WiringSender.class, wiringSender, properties);

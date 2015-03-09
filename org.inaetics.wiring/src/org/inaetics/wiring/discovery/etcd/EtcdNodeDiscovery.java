@@ -40,7 +40,6 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     private static final String PROPERTY_ID = "wire.id";
     private static final String PROPERTY_PROTOCOL_NAME = "wire.protocol.name";
     private static final String PROPERTY_PROTOCOL_VERSION = "wire.protocol.version";
-    private static final String PROPERTY_ENDPOINT_NAME = "wire.name";
     
     private static final String PATH_SEP = "/";
     private static final String PROP_SEP = "\n";
@@ -177,7 +176,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
             logInfo("Handling endpoint change at etcd index %s, action %s, key %s", index, response.action.toString(), response.node.key);
             
             // new node is ready on a set on the "complete" key with value "true"
-            if (response.action == EtcdKeyAction.set || response.action == EtcdKeyAction.update) {
+            if (response.action == EtcdKeyAction.set || response.action == EtcdKeyAction.create || response.action == EtcdKeyAction.update) {
 
             	WiringEndpointDescription endpoint = getEndpointFromNode(response.node, true);
                 addDiscoveredEndpoint(endpoint);
@@ -233,7 +232,6 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 			switch(key) {
 				case PROPERTY_PROTOCOL_NAME: endpoint.setProtocolName(properties.get(key)); break;
 				case PROPERTY_PROTOCOL_VERSION: endpoint.setProtocolVersion(properties.get(key)); break;
-				case PROPERTY_ENDPOINT_NAME: endpoint.setEndpointName(properties.get(key)); break;
 				default: endpoint.setProperty(key,properties.get(key));
 			}
 		}
@@ -242,7 +240,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     }
     
     private String getNextPart(String s) {
-    	return s.contains(PATH_SEP) ? s.substring(0, s.indexOf(PATH_SEP)) : null;
+    	return s.contains(PATH_SEP) ? s.substring(0, s.indexOf(PATH_SEP)) : s;
     }
 
     private Map<String, String> parseEtcdNodeValueToProperties(EtcdNode node) {
@@ -351,7 +349,6 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 			
 			String value = addProperty("", PROPERTY_PROTOCOL_NAME, endpoint.getProtocolName());
 			value = addProperty(value, PROPERTY_PROTOCOL_VERSION, endpoint.getProtocolVersion());
-			value = addProperty(value, PROPERTY_ENDPOINT_NAME, endpoint.getEndpointName());
 			
 			Map<String, String> properties = endpoint.getProperties();
 			Set<String> keys = properties.keySet();

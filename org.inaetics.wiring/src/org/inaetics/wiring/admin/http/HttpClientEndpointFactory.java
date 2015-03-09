@@ -16,8 +16,8 @@ import org.inaetics.wiring.base.AbstractComponentDelegate;
  */
 public class HttpClientEndpointFactory extends AbstractComponentDelegate implements ClientEndpointProblemListener {
 
-	private Map<WiringEndpointDescription, HttpClientEndpoint> m_clients =
-			new ConcurrentHashMap<WiringEndpointDescription, HttpClientEndpoint>();
+	private Map<String, HttpClientEndpoint> m_clients =
+			new ConcurrentHashMap<String, HttpClientEndpoint>();
 	
     private ClientEndpointProblemListener m_problemListener;
     private HttpAdminConfiguration m_configuration;
@@ -34,7 +34,7 @@ public class HttpClientEndpointFactory extends AbstractComponentDelegate impleme
     	HttpClientEndpoint client = m_clients.get(endpoint);
     	if (client == null) {
     		client = new HttpClientEndpoint(endpoint, m_configuration);
-    		m_clients.put(endpoint, client);
+    		m_clients.put(endpoint.getId(), client);
     		client.setProblemListener(this);
     	}
 		return new WiringSenderImpl(this, m_configuration, endpoint);
@@ -44,17 +44,12 @@ public class HttpClientEndpointFactory extends AbstractComponentDelegate impleme
     	m_clients.remove(endpoint);
     }
 
-    public String sendMessage(String zone, String node, String endpointName, FullMessage message) throws Throwable {
-    	for (WiringEndpointDescription endpoint : m_clients.keySet()) {
-    		if (endpoint.getEndpointName().equals(endpointName)
-    				&& endpoint.getNode().equals(node)
-    				&& endpoint.getZone().equals(zone)) {
-    			
-    			HttpClientEndpoint httpClientEndpoint = m_clients.get(endpoint);
-    			return httpClientEndpoint.sendMessage(message);
-    		}
-    	}
-    	throw new Exception("remote endpoint not found");
+    public String sendMessage(String wireId, String message) throws Throwable {
+		HttpClientEndpoint httpClientEndpoint = m_clients.get(wireId);
+		if (httpClientEndpoint == null) {
+	    	throw new Exception("remote endpoint not found");
+		}			
+		return httpClientEndpoint.sendMessage(message);
     }
     
     @Override
