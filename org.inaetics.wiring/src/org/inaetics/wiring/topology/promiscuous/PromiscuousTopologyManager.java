@@ -112,6 +112,7 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 	@Override
 	public void wiringAdminEvent(WiringAdminEvent event) {
 		// TODO
+		// notify receiver about removed endpoints...?
 	}
 
 	private void exportEndpoints(WiringAdmin admin) {
@@ -137,8 +138,13 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 		}
 		adminMap.put(admin, exportRegistration);
 		
+		WiringEndpointDescription endpointDescription = exportRegistration.getExportReference().getEndpointDescription();
+		
 		// notify endpoint listeners
-		endpointAdded(exportRegistration.getExportReference().getEndpointDescription());
+		endpointAdded(endpointDescription);
+		
+		// notify receiver
+		receiver.wiringEndpointAdded(endpointDescription.getId());
 	}
 	
 	private void importEndpoints(WiringAdmin admin) {
@@ -193,6 +199,12 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 		for (Map<WiringAdmin, ExportRegistration> adminMap : adminMaps) {
 			ExportRegistration exportRegistration = adminMap.remove(admin);
 			if (exportRegistration != null) {
+
+				// notify receiver
+				WiringReceiver wiringReceiver = exportRegistration.getExportReference().getWiringReceiver();
+				WiringEndpointDescription endpointDescription = exportRegistration.getExportReference().getEndpointDescription();
+				wiringReceiver.wiringEndpointRemoved(endpointDescription.getId());
+				
 				unExport(exportRegistration);
 			}
 		}

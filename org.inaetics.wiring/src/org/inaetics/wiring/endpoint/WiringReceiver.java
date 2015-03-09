@@ -7,4 +7,7 @@ public interface WiringReceiver {
 
 	public String messageReceived(String message);
 	
+	public void wiringEndpointAdded(String wireId);
+	public void wiringEndpointRemoved(String wireId);
+	
 }

@@ -18,4 +18,14 @@ public class EchoService implements WiringReceiver {
 		
 	}
 
+	@Override
+	public void wiringEndpointAdded(String wireId) {
+		m_logService.log(LogService.LOG_INFO, "endpoint added: " + wireId);
+	}
+
+	@Override
+	public void wiringEndpointRemoved(String wireId) {
+		m_logService.log(LogService.LOG_INFO, "endpoint removed: " + wireId);
+	}
+
 }
