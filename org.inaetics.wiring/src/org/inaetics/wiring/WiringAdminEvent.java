@@ -52,7 +52,8 @@ public class WiringAdminEvent {
 	 */
 	public static final int			IMPORT_WARNING			= 8;
 
-	private final WiringEndpointDescription endpointDesciption;
+	private final ImportRegistration	importRegistration;
+	private final ExportRegistration	exportRegistration;
 	private final Throwable			exception;
 	private final int				type;
 	private final Bundle			source;
@@ -62,26 +63,34 @@ public class WiringAdminEvent {
 	 * 
 	 * @param type The event type
 	 * @param source The source bundle, must not be {@code null}.
-	 * @param endpointDescription The endpointDescription, can be {@code null}.
+	 * @param importRegistration
+	 * @param exportReference
 	 * @param exception Any exceptions encountered, can be {@code null}
 	 */
-	private WiringAdminEvent(int type, Bundle source, WiringEndpointDescription endpointDescription, Throwable exception) {
-		if (source == null) {
-			throw new NullPointerException("source must not be null");
-		}
+	public WiringAdminEvent(int type, Bundle source, ImportRegistration importRegistration, ExportRegistration exportRegistration, Throwable exception) {
 		this.type = type;
 		this.source = source;
-		this.endpointDesciption = endpointDescription;
+		this.importRegistration = importRegistration;
+		this.exportRegistration = exportRegistration;
 		this.exception = exception;
 	}
 
 	/**
-	 * Return the Endpoint Description for this event.
+	 * Return the Import Registration for this event.
 	 * 
-	 * @return The EndpointDescription or {@code null}.
+	 * @return The Import Registration or {@code null}.
 	 */
-	public WiringEndpointDescription getEndpointDescription() {
-		return endpointDesciption;
+	public ImportRegistration getImportRegistration() {
+		return importRegistration;
+	}
+
+	/**
+	 * Return the Export Registration for this event.
+	 * 
+	 * @return The Export Registration or {@code null}.
+	 */
+	public ExportRegistration getExportRegistration() {
+		return exportRegistration;
 	}
 
 	/**

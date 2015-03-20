@@ -51,8 +51,8 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
     private final Set<WiringEndpointDescription> m_importableEndpoints = new HashSet<WiringEndpointDescription>();
     private final Map<WiringEndpointDescription, Map<WiringAdmin, ImportRegistration>> m_importedEndpoints =
         new HashMap<WiringEndpointDescription, Map<WiringAdmin, ImportRegistration>>();
-    private final Map<WiringEndpointDescription, ServiceRegistration<WiringSender>> m_registeredSenders =
-            new HashMap<WiringEndpointDescription, ServiceRegistration<WiringSender>>();
+    private final Map<ImportRegistration, ServiceRegistration<WiringSender>> m_registeredSenders =
+            new HashMap<ImportRegistration, ServiceRegistration<WiringSender>>();
 
     private final List<WiringAdmin> m_wiringAdmins = new ArrayList<WiringAdmin>();
 
@@ -110,9 +110,27 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 	}
 
 	@Override
-	public void wiringAdminEvent(WiringAdminEvent event) {
-		// TODO
-		// notify receiver about removed endpoints...?
+	public void wiringAdminEvent(final WiringAdminEvent event) {
+        executeTask(new Runnable() {
+            @Override
+            public void run() {
+
+                switch (event.getType()) {
+                    case WiringAdminEvent.EXPORT_ERROR: {
+                        ExportRegistration registration = event.getExportRegistration();
+                        unExport(registration);
+                        break;
+                    }
+                    case WiringAdminEvent.IMPORT_ERROR: {
+                        ImportRegistration registration = event.getImportRegistration();
+                        unImportEndpoint(registration);
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+        });
 	}
 
 	private void exportEndpoints(WiringAdmin admin) {
@@ -189,7 +207,7 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
         properties.put(WiringConstants.PROPERTY_SECURE, endpointDescription.getProperty(WiringConstants.PROPERTY_SECURE));
     		
         ServiceRegistration<WiringSender> serviceRegistration = m_context.registerService(WiringSender.class, wiringSender, properties);
-        m_registeredSenders.put(endpointDescription, serviceRegistration);
+        m_registeredSenders.put(registration, serviceRegistration);
 	}
 	
 	private void unExportEndpoints(WiringAdmin admin) {
@@ -242,15 +260,18 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 		Map<WiringAdmin, ImportRegistration> adminMap = m_importedEndpoints.remove(endpointDescription);
 		Collection<ImportRegistration> registrations = adminMap.values();
 		for (ImportRegistration registration : registrations) {
-			registration.close();
+			unImportEndpoint(registration);
 		}
-		
-		unregisterService(endpointDescription);
 	}
 	
-	private void unregisterService(WiringEndpointDescription endpointDescription) {
-		ServiceRegistration<WiringSender> serviceRegistration = m_registeredSenders.get(endpointDescription);
+	private void unImportEndpoint(ImportRegistration registration) {
+		unregisterService(registration);
+		registration.close();
+	}
+
+	private void unregisterService(ImportRegistration registration) {
+		ServiceRegistration<WiringSender> serviceRegistration = m_registeredSenders.get(registration);
 		serviceRegistration.unregister();
-		m_registeredSenders.remove(endpointDescription);
+		m_registeredSenders.remove(registration);
 	}
 }
