@@ -17,7 +17,6 @@ public class WiringEndpointDescription {
 	private String m_zone;
 	private String m_node;
 	private String m_protocolName;
-	private String m_protocolVersion;
 	private volatile Map<String, String> m_properties = new ConcurrentHashMap<String, String>();
 	
 	public WiringEndpointDescription() {
@@ -60,14 +59,6 @@ public class WiringEndpointDescription {
 
 	public void setProtocolName(String protocolName) {
 		this.m_protocolName = protocolName;
-	}
-
-	public String getProtocolVersion() {
-		return m_protocolVersion;
-	}
-
-	public void setProtocolVersion(String protocolVersion) {
-		this.m_protocolVersion = protocolVersion;
 	}
 
 	public String getProperty(String key) {
@@ -116,7 +107,7 @@ public class WiringEndpointDescription {
 	public String toString() {
 		return "WiringEndpointDescription [m_zone=" + m_zone + ", m_node="
 				+ m_node + ", m_id=" + m_id + ", m_protocolName="
-				+ m_protocolName + ", m_protocolVersion=" + m_protocolVersion
+				+ m_protocolName
 				+ ", m_properties=" + m_properties + "]";
 	}
 		

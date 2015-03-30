@@ -5,7 +5,8 @@ package org.inaetics.wiring.admin.http;
 
 public interface HttpWiringEndpointProperties {
 
-	public static final String BASE = "wire.inaetics-http.";
+	public static final String BASE = "inaetics.wiring.http.";
+	public static final String VERSION = BASE + "version";
 	public static final String URL = BASE + "url";
 
 }

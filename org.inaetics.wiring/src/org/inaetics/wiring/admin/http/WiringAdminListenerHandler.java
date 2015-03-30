@@ -42,7 +42,7 @@ public class WiringAdminListenerHandler extends AbstractComponentDelegate {
 		endpoint.setZone(m_configuration.getZone());
 		endpoint.setNode(m_configuration.getNode());
 		endpoint.setProtocolName(HttpAdminConstants.PROTOCOL_NAME);
-		endpoint.setProtocolVersion(HttpAdminConstants.PROTOCOL_VERSION);
+		endpoint.setProperty(HttpWiringEndpointProperties.VERSION, HttpAdminConstants.PROTOCOL_VERSION);
 		
 		try {
 			endpoint.setProperty(HttpWiringEndpointProperties.URL, new URL(m_configuration.getBaseUrl().toString() + serviceId).toString());

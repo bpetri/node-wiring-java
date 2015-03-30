@@ -37,9 +37,8 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 	public static final String DISCOVERY_NAME = "Amdatu Wiring Node Discovery (Etcd)";
     public static final String DISCOVERY_TYPE = "etcd";
 
-    private static final String PROPERTY_ID = "wire.id";
-    private static final String PROPERTY_PROTOCOL_NAME = "wire.protocol.name";
-    private static final String PROPERTY_PROTOCOL_VERSION = "wire.protocol.version";
+    private static final String PROPERTY_ID = "inaetics.wiring.id";
+    private static final String PROPERTY_PROTOCOL_NAME = "inaetics.wiring.config";
     
     private static final String PATH_SEP = "/";
     private static final String PROP_SEP = "\n";
@@ -231,7 +230,6 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
     	for (String key : keySet) {
 			switch(key) {
 				case PROPERTY_PROTOCOL_NAME: endpoint.setProtocolName(properties.get(key)); break;
-				case PROPERTY_PROTOCOL_VERSION: endpoint.setProtocolVersion(properties.get(key)); break;
 				default: endpoint.setProperty(key,properties.get(key));
 			}
 		}
@@ -348,7 +346,6 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 		private String getEndpointValue(WiringEndpointDescription endpoint) {
 			
 			String value = addProperty("", PROPERTY_PROTOCOL_NAME, endpoint.getProtocolName());
-			value = addProperty(value, PROPERTY_PROTOCOL_VERSION, endpoint.getProtocolVersion());
 			
 			Map<String, String> properties = endpoint.getProperties();
 			Set<String> keys = properties.keySet();

@@ -55,8 +55,8 @@ public final class ExportedEndpointImpl implements ExportRegistration, ExportRef
     		m_endpointDescription.setZone(m_configuration.getZone());
     		m_endpointDescription.setNode(m_configuration.getNode());
     		m_endpointDescription.setProtocolName(HttpAdminConstants.PROTOCOL_NAME);
-    		m_endpointDescription.setProtocolVersion(HttpAdminConstants.PROTOCOL_VERSION);
-    		
+ 
+    		m_endpointDescription.setProperty(HttpWiringEndpointProperties.VERSION, HttpAdminConstants.PROTOCOL_VERSION);
     		m_endpointDescription.setProperty(WiringConstants.PROPERTY_SECURE, HttpAdminConstants.SECURE);
     		
     		try {
