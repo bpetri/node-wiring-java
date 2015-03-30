@@ -12,11 +12,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.inaetics.wiring.WiringEndpointDescription;
+import org.inaetics.wiring.base.IOUtil;
 import org.osgi.framework.ServiceException;
 
 /**
@@ -27,9 +24,6 @@ import org.osgi.framework.ServiceException;
 public final class HttpClientEndpoint {
 
     private static final int FATAL_ERROR_COUNT = 5;
-
-    private final ObjectMapper m_objectMapper = new ObjectMapper();
-    private final JsonFactory m_JsonFactory = new JsonFactory(m_objectMapper);
 
     private final WiringEndpointDescription m_endpoint;
     private final HttpAdminConfiguration m_configuration;
@@ -79,13 +73,12 @@ public final class HttpClientEndpoint {
      * @return the result of the method invocation, can be <code>null</code>.
      * @throws Exception in case the invocation failed in some way.
      */
-    String sendMessage(String message) throws Throwable {
+    String sendMessage(String message) throws Exception {
 
         HttpURLConnection connection = null;
         OutputStream outputStream = null;
         InputStream inputStream = null;
         String result = null;
-        ExceptionWrapper exception = null;
         try {
         	
         	URL url = new URL(m_endpoint.getProperty(HttpWiringEndpointProperties.URL));
@@ -98,25 +91,15 @@ public final class HttpClientEndpoint {
             connection.setRequestProperty("Content-Type", "application/json");
             connection.connect();
             outputStream = connection.getOutputStream();
-            writeMessageJSON(outputStream, message);
+            
+            outputStream.write(message.getBytes("UTF-8"));
+            outputStream.flush();
 
             int rc = connection.getResponseCode();
             switch (rc) {
                 case HTTP_OK:
                     inputStream = connection.getInputStream();
-                    JsonNode tree = m_objectMapper.readTree(inputStream);
-                    if (tree != null) {
-                        JsonNode exceptionNode = tree.get("e");
-                        if (exceptionNode != null) {
-                            exception = m_objectMapper.readValue(exceptionNode, ExceptionWrapper.class);
-                        }
-                        else {
-                            JsonNode responseNode = tree.get("r");
-                            if (responseNode != null) {
-                                result = m_objectMapper.readValue(responseNode, String.class);
-                            }
-                        }
-                    }
+                    result = IOUtil.convertStreamToString(inputStream, "UTF-8");
                     break;
                 default:
                     throw new IOException("Unexpected HTTP response: " + rc + " " + connection.getResponseMessage());
@@ -126,8 +109,7 @@ public final class HttpClientEndpoint {
         }
         catch (IOException e) {
             handleRemoteException(e);
-            throw new ServiceException("Remote service invocation failed: " + e.getMessage(), ServiceException.REMOTE,
-                e);
+            throw new ServiceException("Remote service invocation failed: " + e.getMessage(), ServiceException.REMOTE, e);
         }
         finally {
             closeSilently(inputStream);
@@ -137,25 +119,7 @@ public final class HttpClientEndpoint {
             }
         }
 
-        if (exception != null) {
-            throw exception.getException();
-        }
         return result;
     }
 
-    /**
-     * Writes out the the invocation payload as a JSON object with with two fields. The m-field holds the method's signature
-     * and the a-field hold the arguments array.
-     * 
-     * @param out the output stream to write to
-     * @param method the method in question
-     * @param arguments the arguments
-     * @throws IOException if a write operation fails
-     */
-    private void writeMessageJSON(OutputStream out, String message) throws IOException {
-        JsonGenerator gen = m_JsonFactory.createJsonGenerator(out);
-        gen.writeObject(message);
-        gen.flush();
-        gen.close();
-    }
 }

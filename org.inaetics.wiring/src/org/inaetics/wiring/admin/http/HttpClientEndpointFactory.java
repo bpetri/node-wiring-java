@@ -44,7 +44,7 @@ public class HttpClientEndpointFactory extends AbstractComponentDelegate impleme
     	m_clients.remove(endpoint);
     }
 
-    public String sendMessage(String wireId, String message) throws Throwable {
+    public String sendMessage(String wireId, String message) throws Exception {
 		HttpClientEndpoint httpClientEndpoint = m_clients.get(wireId);
 		if (httpClientEndpoint == null) {
 	    	throw new Exception("remote endpoint not found");

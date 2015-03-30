@@ -13,15 +13,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.inaetics.wiring.WiringEndpointDescription;
 import org.inaetics.wiring.base.AbstractComponentDelegate;
+import org.inaetics.wiring.base.IOUtil;
 import org.inaetics.wiring.endpoint.WiringReceiver;
 
 /**
@@ -38,9 +37,6 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
 
     private final WiringAdminFactory m_factory;
     private final HttpAdminConfiguration m_configuration;
-
-    private final ObjectMapper m_objectMapper = new ObjectMapper();
-    private final JsonFactory m_jsonFactory = new JsonFactory(m_objectMapper);
 
     private static final String APPLICATION_JSON = "application/json";
 
@@ -137,22 +133,30 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
         resp.setStatus(SC_OK);
         resp.setContentType(APPLICATION_JSON);
 
-        JsonGenerator gen = m_jsonFactory.createJsonGenerator(resp.getOutputStream());
-        gen.writeStartArray();
-
+        String response = "wires:\n";
+        
         m_lock.readLock().lock();
         try {
             for (String wireId : m_handlers.keySet()) {
-                gen.writeString(wireId);
+            	response += wireId + "\n";
             }
         }
         finally {
             m_lock.readLock().unlock();
         }
 
-        gen.writeEndArray();
-        gen.close();
-
+    	ServletOutputStream outputStream = resp.getOutputStream();
+    	try {
+    		outputStream.write(response.getBytes("UTF-8"));
+    	}
+        catch (Exception e) {
+            logError("Server Endpoint Handler failed", e);
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    	finally {
+            IOUtil.closeSilently(outputStream);
+    	}
+        
     }
 
     /**
@@ -221,13 +225,16 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
 
             HttpServerEndpoint handler = getHandler(endpointId);
             if (handler != null) {
+            	ServletOutputStream outputStream = resp.getOutputStream();
                 try {
-                	// TODO what can we reply?
-//                    handler.listMethodSignatures(req, resp);
+                	outputStream.write(("id: " + endpointId).getBytes("UTF-8"));
                 }
                 catch (Exception e) {
                     logError("Server Endpoint Handler failed: %s", e, endpointId);
                     resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                }
+                finally {
+                    IOUtil.closeSilently(outputStream);
                 }
             }
             else {
