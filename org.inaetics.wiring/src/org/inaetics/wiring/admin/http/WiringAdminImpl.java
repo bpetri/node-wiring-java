@@ -65,7 +65,7 @@ public final class WiringAdminImpl extends AbstractComponentDelegate implements 
 		
 		// check protocol
 		if (!endpoint.getProtocolName().equals(HttpAdminConstants.PROTOCOL_NAME)
-				|| !endpoint.getProperty(HttpWiringEndpointProperties.VERSION).equals(HttpAdminConstants.PROTOCOL_VERSION)) {
+				|| (endpoint.getProperty(HttpWiringEndpointProperties.VERSION) != null && !endpoint.getProperty(HttpWiringEndpointProperties.VERSION).equals(HttpAdminConstants.PROTOCOL_VERSION))) {
 			logWarning("protocol not supported: %s %s", endpoint.getProtocolName(), endpoint.getProperty(HttpWiringEndpointProperties.VERSION));
 			return null;
 		}
