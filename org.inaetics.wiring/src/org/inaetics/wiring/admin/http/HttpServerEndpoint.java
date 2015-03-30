@@ -22,7 +22,7 @@ import org.inaetics.wiring.endpoint.WiringReceiver;
  */
 public final class HttpServerEndpoint {
 
-    private static final String MIME_TYPE = "text/plain";
+    private static final String MIME_TYPE = "text/plain;charset=utf-8";
 
     private WiringEndpointDescription m_endpoint;
     private WiringReceiver m_receiver;

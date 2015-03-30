@@ -38,7 +38,7 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
     private final WiringAdminFactory m_factory;
     private final HttpAdminConfiguration m_configuration;
 
-    private static final String APPLICATION_JSON = "application/json";
+    private static final String MIME_TYPE = "text/plain;charset=utf-8";
 
     public HttpServerEndpointHandler(WiringAdminFactory factory, HttpAdminConfiguration configuration) {
         super(factory);
@@ -131,7 +131,7 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
     public void listEndpointIds(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         resp.setStatus(SC_OK);
-        resp.setContentType(APPLICATION_JSON);
+        resp.setContentType(MIME_TYPE);
 
         String response = "wires:\n";
         
@@ -227,6 +227,8 @@ public final class HttpServerEndpointHandler extends AbstractComponentDelegate {
             if (handler != null) {
             	ServletOutputStream outputStream = resp.getOutputStream();
                 try {
+                    resp.setStatus(SC_OK);
+                    resp.setContentType(MIME_TYPE);
                 	outputStream.write(("id: " + endpointId).getBytes("UTF-8"));
                 }
                 catch (Exception e) {

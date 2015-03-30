@@ -88,7 +88,7 @@ public final class HttpClientEndpoint {
             connection.setDoOutput(true);
             connection.setConnectTimeout(m_configuration.getConnectTimeout());
             connection.setReadTimeout(m_configuration.getReadTimeout());
-            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Content-Type", "text/plain;charset=utf-8");
             connection.connect();
             outputStream = connection.getOutputStream();
             
