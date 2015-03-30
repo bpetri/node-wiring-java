@@ -18,21 +18,24 @@ public class EchoClient {
 		sendMessage(wireId, "test message");
 	}
 	
-	public void sendMessage(String wireId, String message) {
+	public String sendMessage(String wireId, String message) {
 
 		try {
 			WiringSender wiringSender = Util.getWiringSender(m_context, wireId);
 			if (wiringSender == null) {
 				m_logService.log(LogService.LOG_ERROR, "endpoint not found for message %s" + message);
+				return "error: no sender for given id found";
 			}
 			else {
 				String response = wiringSender.sendMessage(message);
 				m_logService.log(LogService.LOG_INFO, "message response: %s" + response);
+				return response;
 			}			
 		} catch (Throwable e) {
 			m_logService.log(LogService.LOG_ERROR, "error sending message " + message, e);
+			return "error: " + e.getMessage();
 		}
-
+		
 	}
 
 }
