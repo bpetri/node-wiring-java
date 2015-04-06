@@ -148,8 +148,9 @@ public abstract class AbstractDiscovery extends AbstractWiringEndpointPublishing
     }
 
     private boolean isLocalEndpoint(WiringEndpointDescription endpointDescription) {
-    	return endpointDescription.getZone().equals(m_configuration.getZone())
-    			&& endpointDescription.getNode().equals(m_configuration.getNode());
+//    	return endpointDescription.getZone().equals(m_configuration.getZone())
+//    			&& endpointDescription.getNode().equals(m_configuration.getNode());
+    	return false;
     }
     
     /**
