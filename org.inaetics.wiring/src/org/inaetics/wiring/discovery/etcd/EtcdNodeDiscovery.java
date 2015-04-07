@@ -174,7 +174,7 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
             index = response.node.modifiedIndex;
             logInfo("Handling endpoint change at etcd index %s, action %s, key %s", index, response.action.toString(), response.node.key);
             
-            // new node is ready on a set on the "complete" key with value "true"
+            // new / updated node
             if (response.action == EtcdKeyAction.set || response.action == EtcdKeyAction.create || response.action == EtcdKeyAction.update) {
 
             	WiringEndpointDescription endpoint = getEndpointFromNode(response.node, true);
