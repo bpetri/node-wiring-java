@@ -7,6 +7,7 @@
 	jackson-core-asl;version=1.9.8,\
 	jackson-mapper-asl;version=1.9.8,\
 	org.apache.commons.lang3;version=3.1.0,\
-	org.inaetics.wiring.endpoint
+	org.inaetics.wiring.endpoint;version=latest
+	
 -sub:  \
 	*.bnd
