@@ -3,7 +3,6 @@
  */
 package org.inaetics.remote.admin.wiring;
 
-import static org.inaetics.remote.ServiceUtil.getStringPlusValue;
 import static org.osgi.framework.Constants.OBJECTCLASS;
 
 import java.util.HashMap;
