@@ -5,7 +5,8 @@ Bundle-Version: 0.1.0
 Private-Package: \
   org.inaetics.remote,\
   org.inaetics.remote.admin.wiring,\
-  org.apache.commons.lang3.*
+  org.apache.commons.lang3.*,\
+  org.codehaus.*
 
 Import-Package: \
   !org.joda.time.*,\
