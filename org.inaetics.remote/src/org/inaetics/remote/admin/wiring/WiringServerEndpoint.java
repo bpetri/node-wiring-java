@@ -5,7 +5,6 @@ package org.inaetics.remote.admin.wiring;
 
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.inaetics.remote.admin.wiring.WiringAdminUtil.getMethodSignature;
-import static org.osgi.service.remoteserviceadmin.RemoteServiceAdminEvent.EXPORT_ERROR;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,8 +14,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,11 +24,8 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.type.JavaType;
-import org.inaetics.wiring.endpoint.WiringReceiver;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.remoteserviceadmin.ExportRegistration;
 
 /**
  * Servlet that represents a remoted local service.
@@ -54,12 +48,7 @@ public final class WiringServerEndpoint {
     private ServerEndpointProblemListener m_problemListener;
     private int m_localErrors;
 
-    private WiringReceiver m_receiver;
-	private volatile ServiceRegistration<?> m_wiringReceiverRegistration;
-	private volatile boolean m_wireCreated = false;
-	
-    public WiringServerEndpoint(final RemoteServiceAdminImpl admin, final ExportRegistration exportRegistration, final BundleContext context, final ServiceReference<?> reference,
-    		final Map<String, String> properties, final Class<?>... interfaceClasses) {
+    public WiringServerEndpoint(final BundleContext context, final ServiceReference<?> reference, final Class<?>... interfaceClasses) {
 
         m_bundleContext = context;
         m_serviceReference = reference;
@@ -74,49 +63,6 @@ public final class WiringServerEndpoint {
             }
         }
         
-        final CountDownLatch doneSignal = new CountDownLatch(1);
-        m_receiver = new WiringReceiver() {
-			
-			@Override
-			public void wiringEndpointRemoved(String wireId) {
-				// unregister service
-				if (m_wiringReceiverRegistration != null) {
-					m_wiringReceiverRegistration.unregister();
-					m_wiringReceiverRegistration = null;
-				}
-				
-				// notify TM when this happens after successful wire creation
-				if (m_wireCreated) {
-					admin.getEventsHandler().emitEvent(EXPORT_ERROR, context.getBundle(), exportRegistration.getExportReference(), new Exception("wire was removed"));
-				}
-
-				doneSignal.countDown();
-			}
-			
-			@Override
-			public void wiringEndpointAdded(String wireId) {
-				properties.put(WiringAdminConstants.WIRE_ID, wireId);
-				m_wireCreated = true;
-				doneSignal.countDown();
-			}
-			
-			@Override
-			public String messageReceived(String message) throws Exception {
-				return invokeService(message);
-			}
-		};
-		
-		m_wiringReceiverRegistration = context.registerService(WiringReceiver.class.getName(), m_receiver, null);
-		
-		try {
-			doneSignal.await(10, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			// nothing to do
-		}
-		
-		if (!m_wireCreated) {
-			throw new RuntimeException("could not create wire");
-		}
     }
 
     /**
@@ -126,7 +72,7 @@ public final class WiringServerEndpoint {
         m_problemListener = problemListener;
     }
 
-    private String invokeService(String message) throws IOException {
+    String invokeService(String message) throws IOException {
 
         boolean ungetService = false;
         try {

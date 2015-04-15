@@ -239,6 +239,7 @@ public final class WiringClientEndpoint implements InvocationHandler {
     private void writeMethodInvocationJSON(OutputStream out, Method method, Object[] arguments) throws IOException {
         JsonGenerator gen = m_JsonFactory.createJsonGenerator(out);
         gen.writeStartObject();
+        gen.writeStringField("id", m_endpoint.getId());
         gen.writeStringField("m", m_interfaceMethods.get(method));
         gen.writeArrayFieldStart("a");
         if (arguments != null) {
