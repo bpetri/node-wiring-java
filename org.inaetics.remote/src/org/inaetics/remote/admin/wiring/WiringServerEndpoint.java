@@ -102,7 +102,23 @@ public final class WiringServerEndpoint {
 			
 			@Override
 			public String messageReceived(String message) throws Exception {
-				return invokeService(message);
+				
+	            JsonNode tree = m_objectMapper.readTree(message);
+	            if (tree == null) {
+	            	throw new Exception("error reading message");
+	            }
+
+	            JsonNode serviceIdNode = tree.get("service.id");
+	            if (serviceIdNode == null) {
+	            	throw new Exception("error reading service.id");
+	            }
+
+	            JsonNode requestNode = tree.get("request");
+	            if (requestNode == null) {
+	            	throw new Exception("error reading request");
+	            }
+				
+				return invokeService(requestNode.toString());
 			}
 		};
 		

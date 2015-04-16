@@ -26,17 +26,17 @@ public final class RemoteServiceAdminFactory extends AbstractComponent implement
     private final ConcurrentHashMap<Bundle, RemoteServiceAdminImpl> m_instances =
         new ConcurrentHashMap<Bundle, RemoteServiceAdminImpl>();
 
-    private final EventsHandlerImpl m_eventsHandler;
-    private final WiringServerEndpointHandler m_endpointHandler;
+    private EventsHandlerImpl m_eventsHandler;
+    private WiringServerEndpointHandler m_endpointHandler;
 
     public RemoteServiceAdminFactory() {
-        super("admin", "http");
-        m_eventsHandler = new EventsHandlerImpl(this);
-        m_endpointHandler = new WiringServerEndpointHandler(this);
+        super("admin", "wiring");
     }
 
     @Override
     protected void startComponent() throws Exception {
+        m_eventsHandler = new EventsHandlerImpl(this);
+        m_endpointHandler = new WiringServerEndpointHandler(this);
         m_eventsHandler.start();
         m_endpointHandler.start();
     }
