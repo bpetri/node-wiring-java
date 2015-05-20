@@ -12,6 +12,7 @@ import org.inaetics.wiring.WiringEndpointEventListener;
 import org.inaetics.wiring.WiringAdmin;
 import org.inaetics.wiring.WiringAdminListener;
 import org.inaetics.wiring.endpoint.WiringReceiver;
+import org.inaetics.wiring.endpoint.WiringTopologyManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.service.cm.ManagedService;
@@ -29,22 +30,24 @@ public class Activator extends DependencyActivatorBase {
 
         String[] objectClass =
             new String[] { WiringAdminListener.class.getName(), WiringEndpointEventListener.class.getName(),
-                ManagedService.class.getName() };
+                ManagedService.class.getName(), WiringTopologyManager.class.getName() };
 
         Dictionary<String, Object> properties = new Hashtable<String, Object>();
         properties.put(Constants.SERVICE_PID, PromiscuousTopologyManager.SERVICE_PID);
 
+        PromiscuousTopologyManager promiscuousTopologyManager = new PromiscuousTopologyManager(manager);
+        
         manager.add(
             createComponent()
                 .setInterface(objectClass, properties)
-                .setImplementation(PromiscuousTopologyManager.class)
+                .setImplementation(promiscuousTopologyManager)
                 .add(createServiceDependency()
                     .setService(LogService.class)
                     .setRequired(false))
                 .add(createServiceDependency()
                     .setService(WiringAdmin.class)
                     .setCallbacks("wiringAdminAdded", "wiringAdminRemoved")
-                    .setRequired(false))
+                    .setRequired(true))
                 .add(createServiceDependency()
                     .setService(WiringReceiver.class)
                     .setCallbacks("wiringReceiverAdded", "wiringReceiverRemoved")

@@ -13,7 +13,9 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +23,8 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.felix.dm.Component;
+import org.apache.felix.dm.DependencyManager;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
@@ -29,9 +33,11 @@ import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.type.JavaType;
 import org.inaetics.wiring.endpoint.WiringReceiver;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.remoteserviceadmin.ExportRegistration;
+import org.osgi.service.remoteserviceadmin.RemoteConstants;
+import org.osgi.service.remoteserviceadmin.RemoteServiceAdmin;
 
 /**
  * Servlet that represents a remoted local service.
@@ -55,15 +61,19 @@ public final class WiringServerEndpoint {
     private int m_localErrors;
 
     private WiringReceiver m_receiver;
-	private volatile ServiceRegistration<?> m_wiringReceiverRegistration;
+    private volatile DependencyManager m_dependencyManager;
+    private volatile Component m_receiverComponent;
 	private volatile boolean m_wireCreated = false;
+
 	
-    public WiringServerEndpoint(final RemoteServiceAdminImpl admin, final ExportRegistration exportRegistration, final BundleContext context, final ServiceReference<?> reference,
+    public WiringServerEndpoint(RemoteServiceAdminFactory factory, final RemoteServiceAdminImpl admin, final ExportRegistration exportRegistration,
+    		final BundleContext context, final ServiceReference<?> reference,
     		final Map<String, String> properties, final Class<?>... interfaceClasses) {
 
         m_bundleContext = context;
         m_serviceReference = reference;
         m_interfaceMethods = new HashMap<String, Method>();
+        m_dependencyManager = factory.getDependencyManager();
 
         for (Class<?> interfaceClass : interfaceClasses) {
             for (Method method : interfaceClass.getMethods()) {
@@ -80,11 +90,11 @@ public final class WiringServerEndpoint {
 			@Override
 			public void wiringEndpointRemoved(String wireId) {
 				// unregister service
-				if (m_wiringReceiverRegistration != null) {
-					m_wiringReceiverRegistration.unregister();
-					m_wiringReceiverRegistration = null;
+				if (m_receiverComponent != null) {
+					m_dependencyManager.remove(m_receiverComponent);
+					m_receiverComponent = null;
 				}
-				
+
 				// notify TM when this happens after successful wire creation
 				if (m_wireCreated) {
 					admin.getEventsHandler().emitEvent(EXPORT_ERROR, context.getBundle(), exportRegistration.getExportReference(), new Exception("wire was removed"));
@@ -122,7 +132,14 @@ public final class WiringServerEndpoint {
 			}
 		};
 		
-		m_wiringReceiverRegistration = context.registerService(WiringReceiver.class.getName(), m_receiver, null);
+		// add some service properties for easier debugging...
+		Dictionary<String, Object> receiverProps = new Hashtable<String, Object>();
+		receiverProps.put("exportedService.id", reference.getProperty(Constants.SERVICE_ID));
+		receiverProps.put("exportedService.interfaces", reference.getProperty(RemoteConstants.SERVICE_EXPORTED_INTERFACES));
+        m_receiverComponent = m_dependencyManager.createComponent()
+				.setInterface(WiringReceiver.class.getName(), receiverProps)
+				.setImplementation(m_receiver);
+        m_dependencyManager.add(m_receiverComponent);
 		
 		try {
 			doneSignal.await(10, TimeUnit.SECONDS);
@@ -133,6 +150,12 @@ public final class WiringServerEndpoint {
 		if (!m_wireCreated) {
 			throw new RuntimeException("could not create wire");
 		}
+    }
+    
+    public void close() {
+    	if (m_dependencyManager != null && m_receiverComponent != null) {
+    		m_dependencyManager.remove(m_receiverComponent);
+    	}
     }
 
     /**

@@ -39,7 +39,7 @@ public final class WiringServerEndpointHandler extends AbstractComponentDelegate
         super(factory);
         m_factory = factory;
     }
-
+    
     /**
      * Add a Server Endpoint.
      * @param admin 
@@ -57,7 +57,7 @@ public final class WiringServerEndpointHandler extends AbstractComponentDelegate
         String[] endpointInterfaces = (String[]) reference.getProperty(OBJECTCLASS);
         Class<?>[] serviceInterfaces = getServiceInterfaces(getBundleContext(), reference);
         Class<?>[] exportedInterfaces = getExportInterfaceClasses(serviceInterfaces, endpointInterfaces);
-        WiringServerEndpoint serverEndpoint = new WiringServerEndpoint(admin, exportRegistration, getBundleContext(), reference, extraProperties, exportedInterfaces);
+        WiringServerEndpoint serverEndpoint = new WiringServerEndpoint(m_factory, admin, exportRegistration, getBundleContext(), reference, extraProperties, exportedInterfaces);
 
         m_lock.writeLock().lock();
         try {

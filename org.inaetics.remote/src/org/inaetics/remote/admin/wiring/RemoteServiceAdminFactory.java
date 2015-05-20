@@ -7,10 +7,15 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.felix.dm.DependencyManager;
 import org.inaetics.remote.AbstractComponent;
+import org.inaetics.wiring.endpoint.WiringConstants;
+import org.inaetics.wiring.endpoint.WiringSender;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.remoteserviceadmin.ExportReference;
 import org.osgi.service.remoteserviceadmin.ImportReference;
@@ -29,8 +34,13 @@ public final class RemoteServiceAdminFactory extends AbstractComponent implement
     private EventsHandlerImpl m_eventsHandler;
     private WiringServerEndpointHandler m_endpointHandler;
 
-    public RemoteServiceAdminFactory() {
+	private DependencyManager m_dependencyManager;
+
+	private volatile ConcurrentHashMap<String, WiringSender> m_wiringSenders = new ConcurrentHashMap<>();
+	
+    public RemoteServiceAdminFactory(DependencyManager dependencyManager) {
         super("admin", "wiring");
+        m_dependencyManager = dependencyManager;
     }
 
     @Override
@@ -45,6 +55,34 @@ public final class RemoteServiceAdminFactory extends AbstractComponent implement
     protected void stopComponent() throws Exception {
         m_eventsHandler.stop();
         m_endpointHandler.stop();
+    }
+
+    private void wiringSenderAdded(ServiceReference<WiringSender> reference, WiringSender wiringSender) {
+    	String wireId = (String) reference.getProperty(WiringConstants.PROPERTY_WIRE_ID);
+    	m_wiringSenders.put(wireId, wiringSender);
+    }
+    
+    private void wiringSenderRemoved(ServiceReference<WiringSender> reference, WiringSender wiringSender) {
+    	String wireId = (String) reference.getProperty(WiringConstants.PROPERTY_WIRE_ID);
+    	m_wiringSenders.remove(wireId);
+    	for (RemoteServiceAdminImpl admin : m_instances.values()) {
+    		admin.wiringSenderRemoved(wireId);
+    	}
+    }
+    
+    WiringSender getWiringSender(String wireId) {
+    	// wait at most 10s for the wiring sender
+    	for (int i=0; i<10; i++) {
+    		if (m_wiringSenders.containsKey(wireId)) {
+    			return m_wiringSenders.get(wireId);
+    		}
+    		try {
+				TimeUnit.SECONDS.sleep(1);
+			} catch (InterruptedException e) {
+				// nop
+			}
+    	}
+    	return null;
     }
 
     @Override
@@ -100,6 +138,10 @@ public final class RemoteServiceAdminFactory extends AbstractComponent implement
 
     WiringServerEndpointHandler getServerEndpointHandler() {
         return m_endpointHandler;
+    }
+    
+    DependencyManager getDependencyManager() {
+    	return m_dependencyManager;
     }
 
 }

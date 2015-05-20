@@ -5,6 +5,7 @@ package org.inaetics.remote.admin.wiring;
 
 import java.util.List;
 
+import org.inaetics.wiring.endpoint.WiringSender;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
@@ -20,13 +21,16 @@ public class WiringClientEndpointFactory implements ServiceFactory<Object>, Clie
     private final EndpointDescription m_endpoint;
     private final List<String> m_interfaceNames;
     private ClientEndpointProblemListener m_problemListener;
+	private WiringSender m_wiringSender;
 
     /**
      * Creates a new {@link WiringClientEndpointFactory} instance.
+     * @param wiringSender 
      */
-    public WiringClientEndpointFactory(EndpointDescription endpoint) {
+    public WiringClientEndpointFactory(EndpointDescription endpoint, WiringSender wiringSender) {
     	m_endpoint = endpoint;
         m_interfaceNames = endpoint.getInterfaces();
+        m_wiringSender = wiringSender;
     }
 
     @Override
@@ -41,14 +45,14 @@ public class WiringClientEndpointFactory implements ServiceFactory<Object>, Clie
                 return null;
             }
         }
-        WiringClientEndpoint restEndpoint;
+        WiringClientEndpoint endpoint;
 		try {
-			restEndpoint = new WiringClientEndpoint(bundle.getBundleContext(), m_endpoint, interfaceClasses);
+			endpoint = new WiringClientEndpoint(bundle.getBundleContext(), m_endpoint, m_wiringSender, interfaceClasses);
 		} catch (Exception e) {
 			return null;
 		}
-        restEndpoint.setProblemListener(this);
-        return restEndpoint.getServiceProxy();
+        endpoint.setProblemListener(this);
+        return endpoint.getServiceProxy();
     }
 
     @Override

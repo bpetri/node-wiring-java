@@ -111,8 +111,12 @@ public abstract class AbstractDiscovery extends AbstractWiringEndpointPublishing
     		return;
     	}
     	
-    	m_endpoints.put(endpoint.getId(), endpoint);
-
+    	// check if sth as changed
+    	WiringEndpointDescription oldEndpoint = m_endpoints.put(endpoint.getId(), endpoint);
+    	if (oldEndpoint != null && oldEndpoint.equals(endpoint)) {
+    		return;
+    	}
+    	
     	executeTask(new Runnable() {
 
             @Override

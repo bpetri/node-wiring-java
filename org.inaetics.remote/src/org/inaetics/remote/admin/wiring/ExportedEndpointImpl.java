@@ -10,6 +10,7 @@ import static org.osgi.service.remoteserviceadmin.RemoteServiceAdminEvent.EXPORT
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.osgi.framework.ServiceReference;
@@ -36,7 +37,6 @@ public final class ExportedEndpointImpl implements ExportRegistration, ExportRef
     private volatile Map<String, ?> m_properties; // original export properties
     private volatile WiringServerEndpoint m_serverEndpoint;
     private EndpointDescriptionBuilder m_endpointBuilder;
-    
 
     /**
      * Constructs an {@link ExportRegistrationImpl} and registers the server endpoint. Any input validation
@@ -136,6 +136,7 @@ public final class ExportedEndpointImpl implements ExportRegistration, ExportRef
         }
         if (m_serverEndpoint != null) {
             m_admin.getServerEndpointHandler().removeEndpoint(m_endpoint);
+            m_serverEndpoint.close();
             m_serverEndpoint = null;
         }
         m_admin.exportedEndpointClosed(this);

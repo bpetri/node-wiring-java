@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.felix.dm.Component;
+import org.apache.felix.dm.DependencyManager;
 import org.inaetics.wiring.ExportRegistration;
 import org.inaetics.wiring.ImportReference;
 import org.inaetics.wiring.ImportRegistration;
@@ -27,6 +29,7 @@ import org.inaetics.wiring.base.AbstractWiringEndpointPublishingComponent;
 import org.inaetics.wiring.endpoint.WiringConstants;
 import org.inaetics.wiring.endpoint.WiringReceiver;
 import org.inaetics.wiring.endpoint.WiringSender;
+import org.inaetics.wiring.endpoint.WiringTopologyManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
@@ -40,7 +43,7 @@ import org.osgi.service.cm.ManagedService;
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */
 public final class PromiscuousTopologyManager extends AbstractWiringEndpointPublishingComponent implements
-    WiringAdminListener, WiringEndpointEventListener, ManagedService {
+    WiringAdminListener, WiringEndpointEventListener, ManagedService, WiringTopologyManager {
 
     public final static String SERVICE_PID = "org.amdatu.remote.topology.promiscuous";
 
@@ -51,15 +54,18 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
     private final Set<WiringEndpointDescription> m_importableEndpoints = new HashSet<WiringEndpointDescription>();
     private final Map<WiringEndpointDescription, Map<WiringAdmin, ImportRegistration>> m_importedEndpoints =
         new HashMap<WiringEndpointDescription, Map<WiringAdmin, ImportRegistration>>();
-    private final Map<ImportRegistration, ServiceRegistration<WiringSender>> m_registeredSenders =
-            new HashMap<ImportRegistration, ServiceRegistration<WiringSender>>();
+    private final Map<ImportRegistration, Component> m_registeredSenders =
+            new HashMap<ImportRegistration, Component>();
 
     private final List<WiringAdmin> m_wiringAdmins = new ArrayList<WiringAdmin>();
 
 	private volatile BundleContext m_context;
 
-    public PromiscuousTopologyManager() {
+	private DependencyManager m_manager;
+
+    public PromiscuousTopologyManager(DependencyManager manager) {
         super("topology", "promiscuous");
+        m_manager = manager;
     }
 
     @Override
@@ -139,9 +145,9 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 		}
 	}
 	
-	private void exportEndpoints(WiringReceiver listener) {
+	private void exportEndpoints(WiringReceiver receiver) {
 		for (WiringAdmin admin : m_wiringAdmins) {
-			exportEndpoint(admin, listener);
+			exportEndpoint(admin, receiver);
 		}
 	}
 
@@ -207,9 +213,12 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
         String secureDescription = endpointDescription.getProperty(WiringConstants.PROPERTY_SECURE);
         String secureProperty = secureDescription != null ? secureDescription : "no";
         properties.put(WiringConstants.PROPERTY_SECURE, secureProperty);
-    		
-        ServiceRegistration<WiringSender> serviceRegistration = m_context.registerService(WiringSender.class, wiringSender, properties);
-        m_registeredSenders.put(registration, serviceRegistration);
+
+        Component wiringSenderComponent = m_manager.createComponent()
+        	.setInterface(WiringSender.class.getName(), properties)
+        	.setImplementation(wiringSender);
+        m_manager.add(wiringSenderComponent);
+        m_registeredSenders.put(registration, wiringSenderComponent);
 	}
 	
 	private void unExportEndpoints(WiringAdmin admin) {
@@ -272,8 +281,8 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 	}
 
 	private void unregisterService(ImportRegistration registration) {
-		ServiceRegistration<WiringSender> serviceRegistration = m_registeredSenders.get(registration);
-		serviceRegistration.unregister();
+		Component component = m_registeredSenders.get(registration);
+		m_manager.remove(component);
 		m_registeredSenders.remove(registration);
 	}
 }

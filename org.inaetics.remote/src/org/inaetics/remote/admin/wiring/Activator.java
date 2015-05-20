@@ -8,12 +8,17 @@ import static org.inaetics.remote.admin.wiring.WiringAdminConstants.SUPPORTED_IN
 import static org.osgi.service.remoteserviceadmin.RemoteConstants.REMOTE_CONFIGS_SUPPORTED;
 import static org.osgi.service.remoteserviceadmin.RemoteConstants.REMOTE_INTENTS_SUPPORTED;
 
+import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.List;
 
 import org.apache.felix.dm.Component;
 import org.apache.felix.dm.DependencyActivatorBase;
 import org.apache.felix.dm.DependencyManager;
+import org.inaetics.wiring.endpoint.WiringReceiver;
+import org.inaetics.wiring.endpoint.WiringSender;
+import org.inaetics.wiring.endpoint.WiringTopologyManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.service.cm.ConfigurationException;
@@ -59,6 +64,7 @@ public final class Activator extends DependencyActivatorBase implements ManagedS
 
         unregisterConfigurationService();
         unregisterFactoryService();
+        
     }
 
     @Override
@@ -84,7 +90,10 @@ public final class Activator extends DependencyActivatorBase implements ManagedS
             .setInterface(ManagedService.class.getName(), properties)
             .setImplementation(this)
             .setAutoConfig(DependencyManager.class, false)
-            .setAutoConfig(Component.class, false);
+            .setAutoConfig(Component.class, false)
+            .add(createServiceDependency()
+            		.setService(WiringTopologyManager.class)
+            		.setRequired(true));
 
         m_configurationComponent = component;
         m_dependencyManager.add(component);
@@ -103,7 +112,7 @@ public final class Activator extends DependencyActivatorBase implements ManagedS
         properties.put(REMOTE_CONFIGS_SUPPORTED, SUPPORTED_CONFIGURATION_TYPES);
         properties.put(REMOTE_INTENTS_SUPPORTED, SUPPORTED_INTENTS);
 
-        RemoteServiceAdminFactory factory = new RemoteServiceAdminFactory();
+        RemoteServiceAdminFactory factory = new RemoteServiceAdminFactory(m_dependencyManager);
 
         Component component = createComponent()
             .setInterface(RemoteServiceAdmin.class.getName(), properties)
@@ -118,7 +127,11 @@ public final class Activator extends DependencyActivatorBase implements ManagedS
             .add(createServiceDependency()
                 .setService(EventAdmin.class)
                 .setCallbacks(factory.getEventsHandler(), "eventAdminAdded", "eventAdminRemoved")
-                .setRequired(false));
+                .setRequired(false))
+            .add(createServiceDependency()
+        		.setService(WiringSender.class)
+        		.setRequired(false)
+        		.setCallbacks("wiringSenderAdded", "wiringSenderRemoved"));
 
         m_factoryComponent = component;
         m_dependencyManager.add(component);

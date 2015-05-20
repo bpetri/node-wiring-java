@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.inaetics.remote.AbstractComponentDelegate;
+import org.inaetics.wiring.endpoint.WiringSender;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.remoteserviceadmin.EndpointDescription;
@@ -98,6 +99,17 @@ public final class RemoteServiceAdminImpl extends AbstractComponentDelegate impl
 
                 ExportedEndpointImpl exportedEndpoint = null;
                 synchronized (m_exportedEndpoints) {
+                	
+                	// check if it's already exported, can happen when TP is restarted
+                	Collection<Set<ExportedEndpointImpl>> endpointSets = m_exportedEndpoints.values();
+                	for (Set<ExportedEndpointImpl> endpointSet : endpointSets) {
+                		for (ExportedEndpointImpl endpoint : endpointSet) {
+                			if (endpoint.getExportedService().equals(reference)) {
+                				endpoint.close();
+                			}
+                		}
+                	}
+                	
                     exportedEndpoint =
                         new ExportedEndpointImpl(RemoteServiceAdminImpl.this, reference, properties, m_endpointBuilder);
 
@@ -155,14 +167,22 @@ public final class RemoteServiceAdminImpl extends AbstractComponentDelegate impl
             @Override
             public ImportRegistration run() {
 
-                ImportedEndpointImpl importedEndpoint = null;
+            	String wirdeId = (String) endpoint.getProperties().get(WiringAdminConstants.WIRE_ID);
+            	WiringSender wiringSender = m_manager.getWiringSender(wirdeId);
+            	
+            	if (wiringSender == null) {
+            		logError("no wiring sender found for wire id %s", wirdeId);
+            		return null;
+            	}
+            	
+            	ImportedEndpointImpl importedEndpoint = null;
                 synchronized (m_importedEndpoints) {
                     Set<ImportedEndpointImpl> importedEndpoints = m_importedEndpoints.get(endpoint);
                     if (importedEndpoints == null) {
                         importedEndpoints = new HashSet<ImportedEndpointImpl>();
                         m_importedEndpoints.put(endpoint, importedEndpoints);
                     }
-                    importedEndpoint = new ImportedEndpointImpl(RemoteServiceAdminImpl.this, endpoint);
+                    importedEndpoint = new ImportedEndpointImpl(RemoteServiceAdminImpl.this, endpoint, wiringSender);
                     importedEndpoints.add(importedEndpoint);
                 }
                 getEventsHandler().emitEvent(IMPORT_REGISTRATION, getBundleContext().getBundle(), importedEndpoint,
@@ -171,6 +191,19 @@ public final class RemoteServiceAdminImpl extends AbstractComponentDelegate impl
             }
         });
     }
+    
+	public void wiringSenderRemoved(String wireId) {
+		//find and close endpoint for this wire
+		Collection<Set<ImportedEndpointImpl>> endpointSets = m_importedEndpoints.values();
+		for (Set<ImportedEndpointImpl> endpointSet : endpointSets) {
+			for (ImportedEndpointImpl endpoint :endpointSet) {
+				String endpointWireId = (String) endpoint.getImportedEndpoint().getProperties().get(WiringAdminConstants.WIRE_ID);
+				if (endpointWireId.equals(wireId)) {
+					endpoint.close();
+				}
+			}
+		}
+	}
 
     @Override
     public Collection<ImportReference> getImportedEndpoints() {

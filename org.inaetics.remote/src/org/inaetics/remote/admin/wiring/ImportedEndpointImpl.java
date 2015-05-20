@@ -14,6 +14,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.inaetics.wiring.endpoint.WiringSender;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.remoteserviceadmin.EndpointDescription;
@@ -47,15 +48,16 @@ public final class ImportedEndpointImpl implements ImportRegistration, ImportRef
      * 
      * @param admin the admin instance
      * @param endpoint the description
+     * @param wiringSender 
      */
-    public ImportedEndpointImpl(RemoteServiceAdminImpl admin, EndpointDescription endpoint) {
+    public ImportedEndpointImpl(RemoteServiceAdminImpl admin, EndpointDescription endpoint, WiringSender wiringSender) {
 
         m_admin = admin;
         m_endpoint = endpoint;
         m_endpointHash = computeHash(endpoint);
 
         try {
-            m_clientEndpoint = new WiringClientEndpointFactory(endpoint);
+            m_clientEndpoint = new WiringClientEndpointFactory(endpoint, wiringSender);
             m_clientEndpoint.setProblemListener(this);
 
             String[] objectClass = createImportedServiceObjectClass(m_endpoint);

@@ -53,7 +53,7 @@ public final class WiringClientEndpoint implements InvocationHandler {
     
     private volatile WiringSender m_sender;
 
-    public WiringClientEndpoint(BundleContext bundleContext, EndpointDescription endpoint, Class<?>... interfaceClasses) throws Exception {
+    public WiringClientEndpoint(BundleContext bundleContext, EndpointDescription endpoint, WiringSender wiringSender, Class<?>... interfaceClasses) throws Exception {
         if (interfaceClasses.length == 0) {
             throw new IllegalArgumentException("Need at least one interface to expose!");
         }
@@ -61,41 +61,14 @@ public final class WiringClientEndpoint implements InvocationHandler {
         m_endpoint = endpoint;
         m_proxy = Proxy.newProxyInstance(getClass().getClassLoader(), interfaceClasses, this);
         m_remoteErrors = 0;
-
+        m_sender = wiringSender;
+        
         for (Class<?> interfaceClass : interfaceClasses) {
             for (Method method : interfaceClass.getMethods()) {
                 m_interfaceMethods.put(method, getMethodSignature(method));
             }
         }
         
-        // get wiring sender
-        // TODO retry or wait? rsa might be faster than wiring
-        String wireId = (String) endpoint.getProperties().get(WiringAdminConstants.WIRE_ID);
-        if (wireId != null) {
-        	String filter = "(" + WiringConstants.PROPERTY_WIRE_ID + "=" + wireId + ")";
-        	Collection<ServiceReference<WiringSender>> wiringSenderRefs = null;
-        	
-        	for (int count = 0; count <= 10; count++) {
-            	wiringSenderRefs = bundleContext.getServiceReferences(WiringSender.class, filter);
-            	if (wiringSenderRefs.isEmpty()) {
-            		TimeUnit.SECONDS.sleep(1);
-            	}
-            	else {
-            		break;
-            	}
-        	}
-        	
-        	if (!wiringSenderRefs.isEmpty()) {
-        		ServiceReference<WiringSender> wiringSenderRef = wiringSenderRefs.iterator().next();
-        		m_sender = bundleContext.getService(wiringSenderRef);
-        	}
-        	else {
-        		throw new Exception("no WiringSender found for wire " + wireId);
-        	}
-        }
-        else {
-    		throw new Exception("no wire id found in endpoint: " + endpoint);
-        }
     }
 
     @SuppressWarnings("unchecked")
