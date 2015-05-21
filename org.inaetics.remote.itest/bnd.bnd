@@ -65,7 +65,7 @@ DynamicImport-Package: *
   junit.osgi,\
   org.mockito.mockito-all,\
   org.inaetics.remote;version=project,\
-  org.apache.felix.dependencymanager,\
+  org.apache.felix.dependencymanager;version='[3.1.0, 4)',\
   org.apache.commons.lang3
   
 # This project's runbundles must contain the bundles the itest bundles itself requires to resolve and operate. It must

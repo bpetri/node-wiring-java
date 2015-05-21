@@ -20,9 +20,11 @@ import org.osgi.service.log.LogService;
 public class EtcdEndpointDiscoveryFullIntegrationTest extends AbstractFullIntegrationTest {
 
     // Skip itest unless you have Etcd running
-    private final boolean SKIP = false;
-    private final String ETCD = "http://docker:4001";
-
+    private final boolean SKIP = true;
+    private static final String ETCD = "http://docker:4001";
+    private static final String ETCD_ROOTPATH_WIRING = "/wiringDiscovery";
+    private static final String ETCD_ROOTPATH_RSA = "/rsaDiscovery";
+    
     @Override
     protected Config[] configureFramework(FrameworkContext parent) throws Exception {
         BundleContext parentBC = getParentContext().getBundleContext();
@@ -40,12 +42,13 @@ public class EtcdEndpointDiscoveryFullIntegrationTest extends AbstractFullIntegr
             .logLevel(LogService.LOG_DEBUG)
             .serviceTimeout(30000)
             .frameworkProperty("felix.cm.loglevel", "4")
+            .frameworkProperty("org.apache.felix.http.host", "localhost")
             .frameworkProperty("org.osgi.service.http.port", "8081")
             .frameworkProperty(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, systemPackages)
             .frameworkProperty("org.inaetics.wiring.discovery.etcd.zone", "zone1")
             .frameworkProperty("org.inaetics.wiring.discovery.etcd.node", "node1")
-            .frameworkProperty("org.inaetics.wiring.discovery.etcd.connecturl", "http://docker:4001")
-            .frameworkProperty("org.inaetics.wiring.discovery.etcd.rootpath", "/inaetics/discovery")
+            .frameworkProperty("org.inaetics.wiring.discovery.etcd.connecturl", ETCD)
+            .frameworkProperty("org.inaetics.wiring.discovery.etcd.rootpath", ETCD_ROOTPATH_WIRING)
             .frameworkProperty("org.inaetics.wiring.admin.http.zone", "zone1")
             .frameworkProperty("org.inaetics.wiring.admin.http.node", "node1")
             .bundlePaths(defaultBundles, remoteServiceAdminBundles, topologyManagerBundles, discoveryBundles);
@@ -54,12 +57,13 @@ public class EtcdEndpointDiscoveryFullIntegrationTest extends AbstractFullIntegr
             .logLevel(LogService.LOG_DEBUG)
             .serviceTimeout(30000)
             .frameworkProperty("felix.cm.loglevel", "4")
+            .frameworkProperty("org.apache.felix.http.host", "localhost")
             .frameworkProperty("org.osgi.service.http.port", "8082")
             .frameworkProperty(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, systemPackages)
             .frameworkProperty("org.inaetics.wiring.discovery.etcd.zone", "zone1")
             .frameworkProperty("org.inaetics.wiring.discovery.etcd.node", "node2")
-            .frameworkProperty("org.inaetics.wiring.discovery.etcd.connecturl", "http://docker:4001")
-            .frameworkProperty("org.inaetics.wiring.discovery.etcd.rootpath", "/inaetics/discovery")
+            .frameworkProperty("org.inaetics.wiring.discovery.etcd.connecturl", ETCD)
+            .frameworkProperty("org.inaetics.wiring.discovery.etcd.rootpath", ETCD_ROOTPATH_WIRING)
             .frameworkProperty("org.inaetics.wiring.admin.http.zone", "zone1")
             .frameworkProperty("org.inaetics.wiring.admin.http.node", "node2")
             .bundlePaths(defaultBundles, remoteServiceAdminBundles, topologyManagerBundles, discoveryBundles);
@@ -80,11 +84,11 @@ public class EtcdEndpointDiscoveryFullIntegrationTest extends AbstractFullIntegr
             // Set connect strings so the clients connect to the freshly created server.
             getChildContext("CHILD1").configure("org.amdatu.remote.discovery.etcd",
                 "org.amdatu.remote.discovery.etcd.connecturl", ETCD,
-                "org.amdatu.remote.discovery.etcd.rootpath", "/discoveryitest");
+                "org.amdatu.remote.discovery.etcd.rootpath", ETCD_ROOTPATH_RSA);
 
             getChildContext("CHILD2").configure("org.amdatu.remote.discovery.etcd",
                 "org.amdatu.remote.discovery.etcd.connecturl", ETCD,
-                "org.amdatu.remote.discovery.etcd.rootpath", "/discoveryitest");
+                "org.amdatu.remote.discovery.etcd.rootpath", ETCD_ROOTPATH_RSA);
         }
     }
 

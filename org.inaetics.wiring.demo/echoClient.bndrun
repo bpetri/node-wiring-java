@@ -26,11 +26,11 @@
 
 
 -runproperties:  \
-	org.inaetics.wiring.discovery.etcd.zone=zone1,\
 	org.inaetics.wiring.discovery.etcd.node=node2,\
-	org.inaetics.wiring.discovery.etcd.connecturl=http://172.17.8.20:4001,\
-	org.inaetics.wiring.discovery.etcd.rootpath=/inaetics/discovery,\
+	org.inaetics.wiring.discovery.etcd.connecturl=http://docker:4001,\
 	org.inaetics.wiring.admin.http.zone=zone1,\
+	org.inaetics.wiring.discovery.etcd.zone=zone1,\
+	org.inaetics.wiring.discovery.etcd.rootpath=/inaetics/discovery,\
 	org.inaetics.wiring.admin.http.node=node2,\
 	org.osgi.service.http.port=8082,\
 	org.apache.felix.http.host=localhost
