@@ -41,12 +41,12 @@ public final class RemoteServiceAdminFactory extends AbstractComponent implement
     public RemoteServiceAdminFactory(DependencyManager dependencyManager) {
         super("admin", "wiring");
         m_dependencyManager = dependencyManager;
+        m_eventsHandler = new EventsHandlerImpl(this);
+        m_endpointHandler = new WiringServerEndpointHandler(this);
     }
 
     @Override
     protected void startComponent() throws Exception {
-        m_eventsHandler = new EventsHandlerImpl(this);
-        m_endpointHandler = new WiringServerEndpointHandler(this);
         m_eventsHandler.start();
         m_endpointHandler.start();
     }
