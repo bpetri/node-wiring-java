@@ -66,18 +66,20 @@ public final class RemoteServiceAdminImpl extends AbstractComponentDelegate impl
 
     @Override
     protected void stopComponentDelegate() throws Exception {
-        for (Set<ExportedEndpointImpl> exportedEndpoints : m_exportedEndpoints.values()) {
-            for (ExportedEndpointImpl exportedEndpoint : exportedEndpoints) {
-                exportedEndpoint.close();
-            }
-        }
-        for (Set<ImportedEndpointImpl> importedEndpoints : m_importedEndpoints.values()) {
-            for (ImportedEndpointImpl importedEndpoint : importedEndpoints) {
-                importedEndpoint.close();
-            }
-        }
-        assert m_exportedEndpoints.isEmpty();
-        assert m_importedEndpoints.isEmpty();
+    	synchronized (m_exportedEndpoints) {
+    		for (Set<ExportedEndpointImpl> exportedEndpoints : m_exportedEndpoints.values()) {
+    			for (ExportedEndpointImpl exportedEndpoint : exportedEndpoints) {
+    				exportedEndpoint.close();
+    			}
+    		}
+		}
+    	synchronized (m_importedEndpoints) {
+    		for (Set<ImportedEndpointImpl> importedEndpoints : m_importedEndpoints.values()) {
+    			for (ImportedEndpointImpl importedEndpoint : importedEndpoints) {
+    				importedEndpoint.close();
+    			}
+    		}
+		}
     }
 
     @Override
@@ -194,12 +196,14 @@ public final class RemoteServiceAdminImpl extends AbstractComponentDelegate impl
     
 	public void wiringSenderRemoved(String wireId) {
 		//find and close endpoint for this wire
-		Collection<Set<ImportedEndpointImpl>> endpointSets = m_importedEndpoints.values();
-		for (Set<ImportedEndpointImpl> endpointSet : endpointSets) {
-			for (ImportedEndpointImpl endpoint :endpointSet) {
-				String endpointWireId = (String) endpoint.getImportedEndpoint().getProperties().get(WiringAdminConstants.WIRE_ID);
-				if (endpointWireId.equals(wireId)) {
-					endpoint.close();
+		synchronized (m_importedEndpoints) {
+			Collection<Set<ImportedEndpointImpl>> endpointSets = m_importedEndpoints.values();
+			for (Set<ImportedEndpointImpl> endpointSet : endpointSets) {
+				for (ImportedEndpointImpl endpoint :endpointSet) {
+					String endpointWireId = (String) endpoint.getImportedEndpoint().getProperties().get(WiringAdminConstants.WIRE_ID);
+					if (endpointWireId.equals(wireId)) {
+						endpoint.close();
+					}
 				}
 			}
 		}
