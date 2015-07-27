@@ -200,9 +200,24 @@ public final class RemoteServiceAdminImpl extends AbstractComponentDelegate impl
 			Collection<Set<ImportedEndpointImpl>> endpointSets = m_importedEndpoints.values();
 			for (Set<ImportedEndpointImpl> endpointSet : endpointSets) {
 				for (ImportedEndpointImpl endpoint :endpointSet) {
-					String endpointWireId = (String) endpoint.getImportedEndpoint().getProperties().get(WiringAdminConstants.WIRE_ID);
-					if (endpointWireId.equals(wireId)) {
-						endpoint.close();
+					EndpointDescription description = endpoint.getImportedEndpoint();
+					if (description != null) {
+						Map<String, Object> properties = description.getProperties();
+						if (properties != null) {
+							String endpointWireId = (String) properties.get(WiringAdminConstants.WIRE_ID);
+							if (endpointWireId != null && endpointWireId.equals(wireId)) {
+								endpoint.close();
+							}
+							else {
+								logWarning("wiringSenderRemoved: endpointWireId is null!");
+							}
+						}
+						else {
+							logWarning("wiringSenderRemoved: properties is null!");
+						}
+					}
+					else {
+						logWarning("wiringSenderRemoved: description is null!");
 					}
 				}
 			}
