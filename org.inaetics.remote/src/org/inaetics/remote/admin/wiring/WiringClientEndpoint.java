@@ -78,7 +78,16 @@ public final class WiringClientEndpoint implements InvocationHandler {
 
     @Override
     public final Object invoke(Object serviceProxy, Method method, Object[] args) throws Throwable {
-        if (m_interfaceMethods.containsKey(method)) {
+        String methodName = method.getName();
+        if ("equals".equals(methodName)) {
+            // Compare by identity, should be sufficient for the general contract without the massive overhead of doing remote calls...
+            return serviceProxy == args[0];
+        }
+        else if ("hashCode".equals(methodName)) {
+            // Should be sufficient for the general contract without the massive overhead of doing remote calls...
+            return System.identityHashCode(serviceProxy);
+        }
+        else if (m_interfaceMethods.containsKey(method)) {
             return invokeRemoteMethod(method, args);
         }
         return method.invoke(args);
