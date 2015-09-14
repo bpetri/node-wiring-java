@@ -18,12 +18,12 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.inaetics.remote.AbstractComponentDelegate;
 import org.inaetics.wiring.endpoint.WiringSender;
@@ -45,10 +45,10 @@ import org.osgi.service.remoteserviceadmin.RemoteServiceAdmin;
 public final class RemoteServiceAdminImpl extends AbstractComponentDelegate implements RemoteServiceAdmin {
 
     private final Map<EndpointDescription, Set<ExportedEndpointImpl>> m_exportedEndpoints =
-        new HashMap<EndpointDescription, Set<ExportedEndpointImpl>>();
+        new ConcurrentHashMap<EndpointDescription, Set<ExportedEndpointImpl>>();
 
     private final Map<EndpointDescription, Set<ImportedEndpointImpl>> m_importedEndpoints =
-        new HashMap<EndpointDescription, Set<ImportedEndpointImpl>>();
+        new ConcurrentHashMap<EndpointDescription, Set<ImportedEndpointImpl>>();
 
     private final RemoteServiceAdminFactory m_manager;
 
@@ -205,8 +205,10 @@ public final class RemoteServiceAdminImpl extends AbstractComponentDelegate impl
 						Map<String, Object> properties = description.getProperties();
 						if (properties != null) {
 							String endpointWireId = (String) properties.get(WiringAdminConstants.WIRE_ID);
-							if (endpointWireId != null && endpointWireId.equals(wireId)) {
-								endpoint.close();
+							if (endpointWireId != null) {
+								if (endpointWireId.equals(wireId)) {
+									endpoint.close();
+								}
 							}
 							else {
 								logWarning("wiringSenderRemoved: endpointWireId is null!");
