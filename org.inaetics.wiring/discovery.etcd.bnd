@@ -10,6 +10,7 @@ Private-Package:  \
 	mousio.etcd4j.*,\
 	mousio.client.*,\
 	io.netty.*,\
+	lzma.sdk.*,\
 	org.slf4j.*,\
 	com.fasterxml.jackson.core.*,\
 	org.apache.commons.lang3.*
@@ -24,6 +25,7 @@ Import-Package:  \
     !org.apache.tomcat.jni,\
     !org.bouncycastle.*,\
     !org.eclipse.jetty.npn,\
+    !org.eclipse.jetty.alpn,\
     !org.jboss.marshalling,\
     !sun.security.*,\
     !sun.misc.*,\
