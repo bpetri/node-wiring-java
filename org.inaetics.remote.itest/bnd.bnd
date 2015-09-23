@@ -85,7 +85,7 @@ DynamicImport-Package: *
 -runpath: \
   org.mockito.mockito-all
 
--runee: JavaSE-1.7
+-runee: JavaSE-1.8
 -runvm: -ea
 -runfw: org.apache.felix.framework
 -runsystempackages: sun.reflect, sun.misc
