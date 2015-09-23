@@ -29,20 +29,17 @@
 	org.amdatu.remote.discovery.etcd;version=latest,\
 	org.amdatu.remote.topology.promiscuous;version=latest,\
 	org.inaetics.remote.admin.wiring;version=latest,\
-	org.inaetics.remote.demo.echoService;version=latest,\
-	org.inaetics.remote.demo.echoService2;version=latest,\
-	org.inaetics.remote.demo.echoClient;version=latest
+	org.inaetics.remote.demo.simpleEchoService2;version=latest
 
 
 -runproperties:  \
 	org.amdatu.remote.discovery.etcd.connecturl=http://docker:2379,\
 	org.amdatu.remote.discovery.etcd.rootpath=/discovery,\
 	org.inaetics.wiring.discovery.etcd.zone=zone1,\
-	org.inaetics.wiring.discovery.etcd.node=node2,\
+	org.inaetics.wiring.discovery.etcd.node=node1,\
 	org.inaetics.wiring.discovery.etcd.connecturl=http://docker:2379,\
 	org.inaetics.wiring.discovery.etcd.rootpath=/inaetics/discovery,\
 	org.inaetics.wiring.admin.http.zone=zone1,\
-	org.inaetics.wiring.admin.http.node=node2,\
-	org.osgi.service.http.port=9090,\
+	org.inaetics.wiring.admin.http.node=node1,\
+	org.osgi.service.http.port=9092,\
 	org.apache.felix.http.host=localhost
-  

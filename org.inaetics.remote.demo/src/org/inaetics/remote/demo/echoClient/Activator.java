@@ -30,8 +30,8 @@ public class Activator extends DependencyActivatorBase {
 		m_component = createComponent()
 			.setInterface(Object.class.getName(), properties)
 			.setImplementation(EchoClient.class)
-			.add(createServiceDependency().setService(EchoService.class).setRequired(true))
-			.add(createServiceDependency().setService(EchoService2.class).setRequired(true))
+			.add(createServiceDependency().setService(EchoService.class).setRequired(false))
+			.add(createServiceDependency().setService(EchoService2.class).setRequired(false))
 			.add(createServiceDependency().setService(LogService.class).setRequired(false));
 		
 		manager.add(m_component);

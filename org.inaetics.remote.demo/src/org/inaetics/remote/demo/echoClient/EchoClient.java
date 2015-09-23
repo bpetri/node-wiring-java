@@ -14,23 +14,19 @@ public class EchoClient {
 	private volatile LogService m_logService;
 	
 	public String tm() {
-		String result = sendMessage("test message") + "\n";
+		String result = sendMessage("test message1") + "\n";
 		return result + sendMessage2("test message2");
 	}
 	
 	public String sendMessage(String message) {
-
 		String response = m_echoService.echo(message);
 		m_logService.log(LogService.LOG_INFO, "message response: %s" + response);
 		return response;
-		
 	}
 
 	public String sendMessage2(String message) {
-
 		String response = m_echoService2.echo(message);
 		m_logService.log(LogService.LOG_INFO, "message response: %s" + response);
 		return response;
-		
 	}
 }
