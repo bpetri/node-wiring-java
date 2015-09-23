@@ -8,21 +8,15 @@ import static org.inaetics.remote.admin.wiring.WiringAdminConstants.SUPPORTED_IN
 import static org.osgi.service.remoteserviceadmin.RemoteConstants.REMOTE_CONFIGS_SUPPORTED;
 import static org.osgi.service.remoteserviceadmin.RemoteConstants.REMOTE_INTENTS_SUPPORTED;
 
-import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
-import java.util.List;
 
 import org.apache.felix.dm.Component;
 import org.apache.felix.dm.DependencyActivatorBase;
 import org.apache.felix.dm.DependencyManager;
-import org.inaetics.wiring.endpoint.WiringReceiver;
 import org.inaetics.wiring.endpoint.WiringSender;
-import org.inaetics.wiring.endpoint.WiringTopologyManager;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.Constants;
 import org.osgi.service.cm.ConfigurationException;
-import org.osgi.service.cm.ManagedService;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.log.LogService;
 import org.osgi.service.remoteserviceadmin.RemoteServiceAdmin;
@@ -39,12 +33,10 @@ import org.osgi.service.remoteserviceadmin.RemoteServiceAdminListener;
  *
  * @author <a href="mailto:amdatu-developers@amdatu.org">Amdatu Project Team</a>
  */
-public final class Activator extends DependencyActivatorBase implements ManagedService {
+public final class Activator extends DependencyActivatorBase {
 
 	private volatile DependencyManager m_dependencyManager;
-    private volatile Component m_configurationComponent;
     private volatile Component m_factoryComponent;
-    private volatile Dictionary<String, ?> m_properties;
 
     @Override
     public void init(BundleContext context, DependencyManager manager) throws Exception {
@@ -52,7 +44,6 @@ public final class Activator extends DependencyActivatorBase implements ManagedS
 
         try {
             registerFactoryService();
-            registerConfigurationService();
         }
         catch (Exception e) {
             throw new ConfigurationException("init", "error", e);
@@ -62,49 +53,8 @@ public final class Activator extends DependencyActivatorBase implements ManagedS
     @Override
     public void destroy(BundleContext context, DependencyManager manager) throws Exception {
 
-        unregisterConfigurationService();
         unregisterFactoryService();
         
-    }
-
-    @Override
-    public void updated(Dictionary<String, ?> properties) throws ConfigurationException {
-        
-    	m_properties = properties;
-
-        try {
-            unregisterFactoryService();
-            Thread.sleep(100);
-            registerFactoryService();
-        }
-        catch (Exception e) {
-            throw new ConfigurationException("updated", "error", e);
-        }
-    }
-
-    private void registerConfigurationService() {
-        Dictionary<String, Object> properties = new Hashtable<String, Object>();
-        properties.put(Constants.SERVICE_PID, WiringAdminConstants.SERVICE_PID);
-
-        Component component = createComponent()
-            .setInterface(ManagedService.class.getName(), properties)
-            .setImplementation(this)
-            .setAutoConfig(DependencyManager.class, false)
-            .setAutoConfig(Component.class, false)
-            .add(createServiceDependency()
-            		.setService(WiringTopologyManager.class)
-            		.setRequired(true));
-
-        m_configurationComponent = component;
-        m_dependencyManager.add(component);
-    }
-
-    private void unregisterConfigurationService() {
-        Component component = m_configurationComponent;
-        m_configurationComponent = null;
-        if (component != null) {
-            m_dependencyManager.remove(component);
-        }
     }
 
     private void registerFactoryService() {
