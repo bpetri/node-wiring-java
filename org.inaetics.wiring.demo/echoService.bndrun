@@ -1,5 +1,5 @@
 -runfw: org.apache.felix.framework;version='[4,5)'
--runee: JavaSE-1.7
+-runee: JavaSE-1.8
 -runsystemcapabilities: ${native_capability}
 
 -resolve.effective: active
@@ -17,17 +17,17 @@
 	org.apache.felix.gogo.shell;version='[0.10.0,0.10.1)',\
 	org.apache.felix.log;version='[1.0.1,1.0.2)',\
 	org.apache.felix.metatype;version='[1.0.6,1.0.7)',\
-	org.inaetics.wiring.admin.http;version=latest,\
-	org.inaetics.wiring.demo.echoService;version=latest,\
-	org.inaetics.wiring.discovery.etcd;version=latest,\
-	org.inaetics.wiring.endpoint;version=latest,\
 	org.inaetics.wiring.base;version=latest,\
-	org.inaetics.wiring.topology.promiscuous;version=latest
+	org.inaetics.wiring.endpoint;version=latest,\
+	org.inaetics.wiring.topology.promiscuous;version=latest,\
+	org.inaetics.wiring.admin.http;version=latest,\
+	org.inaetics.wiring.discovery.etcd;version=latest,\
+	org.inaetics.wiring.demo.echoService;version=latest
 
 
 -runproperties:  \
 	org.inaetics.wiring.discovery.etcd.node=node1,\
-	org.inaetics.wiring.discovery.etcd.connecturl=http://docker:4001,\
+	org.inaetics.wiring.discovery.etcd.connecturl=http://docker:2379,\
 	org.inaetics.wiring.admin.http.zone=zone1,\
 	org.inaetics.wiring.discovery.etcd.zone=zone1,\
 	org.inaetics.wiring.discovery.etcd.rootpath=/inaetics/discovery,\
