@@ -25,8 +25,12 @@ public final class WiringSenderImpl implements WiringSender {
 
 	@Override
 	public String sendMessage(String message) throws Exception {
-
 		return m_endpointFactory.sendMessage(m_endpoint.getId(), message);
 	}
 
+	@Override
+	public String toString() {
+		return "WiringSenderImpl [endpointId=" + m_endpoint.getId() + "]";
+	}
+	
 }

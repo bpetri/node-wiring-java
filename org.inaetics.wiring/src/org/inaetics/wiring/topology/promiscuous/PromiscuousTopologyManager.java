@@ -3,16 +3,14 @@
  */
 package org.inaetics.wiring.topology.promiscuous;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.felix.dm.Component;
 import org.apache.felix.dm.DependencyManager;
@@ -32,7 +30,6 @@ import org.inaetics.wiring.endpoint.WiringSender;
 import org.inaetics.wiring.endpoint.WiringTopologyManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.cm.ManagedService;
 
@@ -47,17 +44,18 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 
     public final static String SERVICE_PID = "org.amdatu.remote.topology.promiscuous";
 
-    private final Set<WiringReceiver> m_exportableReceivers = Collections.newSetFromMap(new HashMap<WiringReceiver, Boolean>());
+    private final Set<WiringReceiver> m_exportableReceivers = Collections.newSetFromMap(new ConcurrentHashMap<WiringReceiver, Boolean>());
     private final Map<WiringReceiver, Map<WiringAdmin, ExportRegistration>> m_exportedReceivers =
-            new HashMap<WiringReceiver, Map<WiringAdmin, ExportRegistration>>();
+            new ConcurrentHashMap<WiringReceiver, Map<WiringAdmin, ExportRegistration>>();
 
-    private final Set<WiringEndpointDescription> m_importableEndpoints = new HashSet<WiringEndpointDescription>();
+    private final Set<WiringEndpointDescription> m_importableEndpoints = Collections.newSetFromMap(new ConcurrentHashMap<WiringEndpointDescription, Boolean>());
     private final Map<WiringEndpointDescription, Map<WiringAdmin, ImportRegistration>> m_importedEndpoints =
-        new HashMap<WiringEndpointDescription, Map<WiringAdmin, ImportRegistration>>();
+        new ConcurrentHashMap<WiringEndpointDescription, Map<WiringAdmin, ImportRegistration>>();
+    
     private final Map<ImportRegistration, Component> m_registeredSenders =
-            new HashMap<ImportRegistration, Component>();
+            new ConcurrentHashMap<ImportRegistration, Component>();
 
-    private final List<WiringAdmin> m_wiringAdmins = new ArrayList<WiringAdmin>();
+    private final Set<WiringAdmin> m_wiringAdmins = Collections.newSetFromMap(new ConcurrentHashMap<WiringAdmin, Boolean>());
 
 	private volatile BundleContext m_context;
 
@@ -267,6 +265,7 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 	}
 	
 	private void unImportEndpoint(WiringEndpointDescription endpointDescription) {
+		logInfo("unimport wiring endpoint %s", endpointDescription.getId());
 		m_importableEndpoints.remove(endpointDescription);
 		Map<WiringAdmin, ImportRegistration> adminMap = m_importedEndpoints.remove(endpointDescription);
 		Collection<ImportRegistration> registrations = adminMap.values();
@@ -276,12 +275,14 @@ public final class PromiscuousTopologyManager extends AbstractWiringEndpointPubl
 	}
 	
 	private void unImportEndpoint(ImportRegistration registration) {
+		logInfo("unimport registration %s", registration.getImportReference().getEndpointDescription().getId());
 		unregisterService(registration);
 		registration.close();
 	}
 
 	private void unregisterService(ImportRegistration registration) {
 		Component component = m_registeredSenders.get(registration);
+		logInfo("unregistering WiringsSender %s", component.getService());
 		m_manager.remove(component);
 		m_registeredSenders.remove(registration);
 	}

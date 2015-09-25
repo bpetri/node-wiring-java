@@ -314,13 +314,13 @@ public final class EtcdNodeDiscovery extends AbstractDiscovery {
 
     private class EtcdRegistrationUpdater implements Runnable {
 
-        private static final int ETCD_REGISTRATION_TTL = 60;
+        private static final int ETCD_REGISTRATION_TTL = 30;
 
         private final ScheduledFuture<?> m_future;
 
         public EtcdRegistrationUpdater() throws Exception {
             m_future =
-                m_executor.scheduleAtFixedRate(this, 0, ETCD_REGISTRATION_TTL - 5,
+                m_executor.scheduleAtFixedRate(this, 0, ETCD_REGISTRATION_TTL - 10,
                     TimeUnit.SECONDS);
         }
 
