@@ -160,7 +160,7 @@ public final class RemoteServiceAdminImpl extends AbstractComponentDelegate impl
         }
 
         if (!hasWireId(endpoint)) {
-            logInfo("No valid service location found. Not importing endpoint: %s", endpoint);
+            logInfo("No wire id found. Not importing endpoint: %s", endpoint);
             return null;
         }
 

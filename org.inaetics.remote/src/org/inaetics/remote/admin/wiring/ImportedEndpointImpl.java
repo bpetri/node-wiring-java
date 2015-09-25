@@ -52,6 +52,16 @@ public final class ImportedEndpointImpl implements ImportRegistration, ImportRef
      */
     public ImportedEndpointImpl(RemoteServiceAdminImpl admin, EndpointDescription endpoint, WiringSender wiringSender) {
 
+    	if (admin == null) {
+    		throw new IllegalArgumentException("admin must not be null!");
+    	}
+    	if (endpoint == null) {
+    		throw new IllegalArgumentException("endpoint must not be null!");
+    	}
+    	if (wiringSender == null) {
+    		throw new IllegalArgumentException("wiringSender must not be null!");
+    	}
+    	
         m_admin = admin;
         m_endpoint = endpoint;
         m_endpointHash = computeHash(endpoint);
