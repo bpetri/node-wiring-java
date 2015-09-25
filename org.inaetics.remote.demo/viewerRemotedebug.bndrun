@@ -33,19 +33,21 @@
 	org.amdatu.remote.discovery.etcd;version=latest,\
 	org.amdatu.remote.topology.promiscuous;version=latest,\
 	org.inaetics.remote.admin.wiring;version=latest,\
-	org.inaetics.remote.demo.processor;version=latest
+	org.inaetics.remote.demo.viewer;version=latest,\
+	org.apache.felix.log.maxSize=-1,\
+	org.apache.felix.log.storeDebug=true
 
 
 -runproperties:  \
 	org.amdatu.remote.discovery.etcd.connecturl=http://docker:2379,\
 	org.amdatu.remote.discovery.etcd.rootpath=/discovery,\
 	org.inaetics.wiring.discovery.etcd.zone=zone1,\
-	org.inaetics.wiring.discovery.etcd.node=node4,\
+	org.inaetics.wiring.discovery.etcd.node=node10,\
 	org.inaetics.wiring.discovery.etcd.connecturl=http://docker:2379,\
 	org.inaetics.wiring.discovery.etcd.rootpath=/inaetics/discovery,\
 	org.inaetics.wiring.admin.http.zone=zone1,\
-	org.inaetics.wiring.admin.http.node=node4,\
-	org.osgi.service.http.port=9041,\
-	org.apache.felix.http.host=localhost,\
-	org.apache.felix.log.maxSize=-1,\
-	org.apache.felix.log.storeDebug=true
+	org.inaetics.wiring.admin.http.node=node10,\
+	org.osgi.service.http.port=9050,\
+	org.apache.felix.http.host=localhost
+	
+-runvm: -"agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"

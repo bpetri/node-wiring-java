@@ -46,4 +46,6 @@
 	org.inaetics.wiring.admin.http.zone=zone1,\
 	org.inaetics.wiring.admin.http.node=node1,\
 	org.osgi.service.http.port=9010,\
-	org.apache.felix.http.host=localhost
+	org.apache.felix.http.host=localhost,\
+	org.apache.felix.log.maxSize=-1,\
+	org.apache.felix.log.storeDebug=truelog 1 
