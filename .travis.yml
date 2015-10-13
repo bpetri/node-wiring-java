@@ -11,6 +11,10 @@ services:
 install:	
   - ./gradlew org.inaetics.wiring:build
 
+script: true
+
+after_success: true 
+
 deploy:
   provider: bintray
   file: $TRAVIS_BUILD_DIR/deployment.json
