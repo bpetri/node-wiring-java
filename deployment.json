@@ -1,0 +1,17 @@
+{
+    "package": {
+        "name": "node-wiring-java", // Bintray package name
+        "repo": "inaetics", // Bintray repository name
+        "subject": "inaetics" // Bintray subject (user or organization)
+    },
+
+    "version": {
+        "name": "latest"
+    },
+
+    "files":
+        [
+        {"includePattern": "org.inaetics.wiring//generated/(.*).jar", "uploadPattern": "java/org.inaetics.wiring/$1.jar",  "matrixParams": { "override": 1 } }
+        ],
+    "publish": true
+}
